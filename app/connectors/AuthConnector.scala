@@ -21,7 +21,6 @@ import play.api.http.Status._
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
-import play.api.Logger
 import auth.Authority
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,20 +34,17 @@ trait AuthConnector extends ServicesConfig {
 
   def getCurrentAuthority()(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
     val getUrl = s"""$serviceUrl/$authorityUri"""
-    Logger.debug(s"[AuthConnector][getCurrentAuthority] - GET $getUrl")
     http.GET[HttpResponse](getUrl).map {
-      response =>
-        Logger.debug(s"[AuthConnector][getCurrentAuthority] - RESPONSE status: ${response.status}, body: ${response.body}")
-        response.status match {
-          case OK => {
-            val uri = (response.json \ "uri").as[String]
-            val oid = uri.substring(uri.lastIndexOf("/") + 1)
-            val userDetails = (response.json \ "userDetailsLink").as[String]
-            val confidenceLevel = (response.json \ "confidenceLevel").as[ConfidenceLevel]
-            Some(Authority(uri, oid, userDetails, confidenceLevel))
-          }
-          case _ => None
+      response => response.status match {
+        case OK => {
+          val uri = (response.json \ "uri").as[String]
+          val oid = uri.substring(uri.lastIndexOf("/") + 1)
+          val userDetails = (response.json \ "userDetailsLink").as[String]
+          val confidenceLevel = (response.json \ "confidenceLevel").as[ConfidenceLevel]
+          Some(Authority(uri, oid, userDetails, confidenceLevel))
         }
+        case _ => None
+      }
     }
   }
 }
