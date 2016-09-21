@@ -30,8 +30,7 @@ object TestController extends TestController {
 
 trait TestController extends BaseController with Authorisation {
 
-  val hello = Action.async { implicit request =>
-    authorised{
+  val hello = Action.async { implicit request => authorised {
       case Authorised => Future.successful(Ok(Json.parse("""[{"key":"test","identifiers":[{"key":"test","value":"test"}],"state":"test"}]""")))
       case NotAuthorised => Future.successful(Forbidden)
     }

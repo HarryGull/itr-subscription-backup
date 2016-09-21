@@ -22,18 +22,15 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import play.api.Logger
-import auth.{Authority, Enrolment}
+import auth.Authority
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait AuthConnector extends ServicesConfig {
 
   def serviceUrl: String
-
   def authorityUri: String
-
   def http: HttpGet with HttpPost
 
   def getCurrentAuthority()(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
@@ -50,22 +47,10 @@ trait AuthConnector extends ServicesConfig {
             val confidenceLevel = (response.json \ "confidenceLevel").as[ConfidenceLevel]
             Some(Authority(uri, oid, userDetails, confidenceLevel))
           }
-          case status => None
+          case _ => None
         }
     }
   }
-
-  def getTAVCEnrolment(uri: String)(implicit hc: HeaderCarrier): Future[Option[Enrolment]] = {
-    val getUrl = s"$serviceUrl$uri/enrolments"
-    http.GET[HttpResponse](getUrl).map {
-      response =>
-        response.status match {
-          case OK => response.json.as[Seq[Enrolment]].find(_.key == "HMRC-TAVC-ORG")
-          case status => None
-        }
-    }
-  }
-
 }
 
 object AuthConnector extends AuthConnector {

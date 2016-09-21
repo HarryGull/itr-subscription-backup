@@ -17,24 +17,62 @@
 package auth
 
 import connectors.AuthConnector
-import org.scalatest.mock.MockitoSugar
+import helpers.AuthHelper.Authorities._
+import helpers.AuthHelper._
+import play.api.mvc.Result
+import play.api.mvc.Results._
 import play.api.test.FakeApplication
-import uk.gov.hmrc.play.http.HeaderCarrier
+import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AuthorisationSpec extends FakeApplication with UnitSpec with MockitoSugar {
+import scala.concurrent.Future
 
-  implicit val hc = HeaderCarrier()
-  val mockAuthConnector = mock[AuthConnector]
+class AuthorisationSpec extends FakeApplication with UnitSpec {
 
   object TestAuthorisation extends Authorisation {
     override val authConnector: AuthConnector = mockAuthConnector
   }
 
-  "Authorisation.authorised" should {
-    "Return an Authorised result when the user has an active TAVC account" in {
-      //when(mockAuthConnector.getCurrentAuthority())
-    }
+  def authorised(): Future[Result] = TestAuthorisation.authorised {
+    case Authorised => Future.successful(Ok)
+    case NotAuthorised => Future.successful(Forbidden)
   }
 
+  "Authorisation.authorised" should {
+
+    "Return a FORBIDDEN result when the user no authority" in {
+      mockGetAuthorityResponse(None)
+      status(authorised()) shouldBe FORBIDDEN
+    }
+
+    "Return a FORBIDDEN result when the user has Confidence Level L0" in {
+      mockGetAuthorityResponse(userCL0)
+      status(authorised()) shouldBe FORBIDDEN
+    }
+
+    "Return an OK result when the user has a low Confidence Level L50" in {
+      mockGetAuthorityResponse(userCL50)
+      status(authorised()) shouldBe OK
+    }
+
+    "Return an OK result when the user has a low Confidence Level L100" in {
+      mockGetAuthorityResponse(userCL100)
+      status(authorised()) shouldBe OK
+    }
+
+    "Return an OK result when the user has a low Confidence Level L200" in {
+      mockGetAuthorityResponse(userCL200)
+      status(authorised()) shouldBe OK
+    }
+
+    "Return an OK result when the user has a low Confidence Level L300" in {
+      mockGetAuthorityResponse(userCL300)
+      status(authorised()) shouldBe OK
+    }
+
+    "Return an OK result when the user has a low Confidence Level L500" in {
+      mockGetAuthorityResponse(userCL500)
+      status(authorised()) shouldBe OK
+    }
+  }
 }

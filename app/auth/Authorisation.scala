@@ -20,7 +20,6 @@ import play.api.mvc.Result
 import connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import uk.gov.hmrc.play.http.HeaderCarrier
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -28,34 +27,13 @@ trait Authorisation {
 
   val authConnector: AuthConnector
 
-  def authorised(f: => AuthorisationResult => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    for {
-      authority <- authConnector.getCurrentAuthority()
-      enrolment <- authConnector.getTAVCEnrolment(getUri(authority))
-      result <- f(mapToAuthResult(enrolment,authority))
-    } yield result
-  }
+  def authorised(f: => AuthorisationResult => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = for {
+    authority <- authConnector.getCurrentAuthority()
+    result <- f(mapToAuthResult(authority))
+  } yield result
 
-  private def mapToAuthResult(enrolment: Option[Enrolment], authority: Option[Authority]): AuthorisationResult = {
-    (enrolment, authority) match {
-      case (Some(tavcEnrolment),Some(authRecord)) => {
-        (tavcEnrolment.state, authRecord.confidenceLevel) match {
-          case ("Activated", x) if x >= ConfidenceLevel.L50 => Authorised
-          case ("NotYetActivated", _) => NotAuthorised
-          case ("Pending", _) => NotAuthorised
-          case ("HandedToAgent", _) => NotAuthorised
-          case (_,_) => NotAuthorised
-        }
-      }
-      case (_,_) => NotAuthorised
-    }
+  private def mapToAuthResult(authority: Option[Authority]): AuthorisationResult = authority match {
+    case Some(authRecord) if authRecord.confidenceLevel >= ConfidenceLevel.L50 => Authorised
+    case _ => NotAuthorised
   }
-
-  private def getUri(authority: Option[Authority]): String = {
-    authority match {
-      case Some(auth) => auth.uri
-      case None => ""
-    }
-  }
-
 }
