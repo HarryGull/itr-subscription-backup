@@ -27,13 +27,9 @@ trait Authorisation {
 
   val authConnector: AuthConnector
 
-  def authorised(f: => AuthorisationResult => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = for {
-    authority <- authConnector.getCurrentAuthority()
-    result <- f(mapToAuthResult(authority))
-  } yield result
-
-  private def mapToAuthResult(authority: Option[Authority]): AuthorisationResult = authority match {
-    case Some(authRecord) if authRecord.confidenceLevel >= ConfidenceLevel.L50 => Authorised
-    case _ => NotAuthorised
+  def authorised(f: => AuthorisationResult => Result)(implicit hc: HeaderCarrier): Future[Result] =
+    authConnector.getCurrentAuthority().map {
+      case Some(authRecord) if authRecord.confidenceLevel >= ConfidenceLevel.L50 => f(Authorised)
+      case _ => f(NotAuthorised)
   }
 }

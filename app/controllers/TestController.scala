@@ -22,8 +22,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import play.api.mvc._
 
-import scala.concurrent.Future
-
 object TestController extends TestController {
   override val authConnector = AuthConnector
 }
@@ -31,8 +29,8 @@ object TestController extends TestController {
 trait TestController extends BaseController with Authorisation {
 
   val hello = Action.async { implicit request => authorised {
-      case Authorised => Future.successful(Ok(Json.parse("""[{"key":"test","identifiers":[{"key":"test","value":"test"}],"state":"test"}]""")))
-      case NotAuthorised => Future.successful(Forbidden)
+      case Authorised => Ok(Json.parse("""[{"key":"test","identifiers":[{"key":"test","value":"test"}],"state":"test"}]"""))
+      case NotAuthorised => Forbidden
     }
   }
 }
