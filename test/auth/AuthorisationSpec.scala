@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package controllers
+package auth
 
-import auth.{Authorisation, Authorised, NotAuthorised}
 import connectors.AuthConnector
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.microservice.controller.BaseController
-import play.api.mvc._
+import org.scalatest.mock.MockitoSugar
+import play.api.test.FakeApplication
+import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.Future
+class AuthorisationSpec extends FakeApplication with UnitSpec with MockitoSugar {
 
-object TestController extends TestController {
-  override val authConnector = AuthConnector
-}
+  implicit val hc = HeaderCarrier()
+  val mockAuthConnector = mock[AuthConnector]
 
-trait TestController extends BaseController with Authorisation {
+  object TestAuthorisation extends Authorisation {
+    override val authConnector: AuthConnector = mockAuthConnector
+  }
 
-  val hello = Action.async { implicit request =>
-    authorised{
-      case Authorised => Future.successful(Ok(Json.parse("""[{"key":"test","identifiers":[{"key":"test","value":"test"}],"state":"test"}]""")))
-      case NotAuthorised => Future.successful(Forbidden)
+  "Authorisation.authorised" should {
+    "Return an Authorised result when the user has an active TAVC account" in {
+      //when(mockAuthConnector.getCurrentAuthority())
     }
   }
+
 }
