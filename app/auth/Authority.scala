@@ -14,28 +14,8 @@
  * limitations under the License.
  */
 
-package controllers
+package auth
 
-import play.api.http.Status
-import play.api.test.FakeRequest
-import play.api.http.Status
-import play.api.test.FakeRequest
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.play.test.WithFakeApplication
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 
-
-class TestControllerSpec extends UnitSpec with WithFakeApplication{
-
-  val fakeRequest = FakeRequest("GET", "/")
-
-
-  "GET /" should {
-    "return 200" in {
-      val result = TestController.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
-
-
-}
+case class Authority(uri: String, oid: String, userDetailsLink: String, confidenceLevel: ConfidenceLevel)

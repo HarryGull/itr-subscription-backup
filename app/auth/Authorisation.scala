@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package controllers
+package auth
 
-import auth.{Authorisation, Authorised, NotAuthorised}
+import play.api.mvc.Result
 import connectors.AuthConnector
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.microservice.controller.BaseController
-import play.api.mvc._
+import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
+import uk.gov.hmrc.play.http.HeaderCarrier
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-object TestController extends TestController {
-  override val authConnector = AuthConnector
-}
+trait Authorisation {
 
-trait TestController extends BaseController with Authorisation {
+  val authConnector: AuthConnector
 
-  val hello = Action.async { implicit request => authorised {
-      case Authorised => Ok(Json.parse("""[{"key":"test","identifiers":[{"key":"test","value":"test"}],"state":"test"}]"""))
-      case NotAuthorised => Forbidden
-    }
+  def authorised(f: => AuthorisationResult => Result)(implicit hc: HeaderCarrier): Future[Result] =
+    authConnector.getCurrentAuthority().map {
+      case Some(authRecord) if authRecord.confidenceLevel >= ConfidenceLevel.L50 => f(Authorised)
+      case _ => f(NotAuthorised)
   }
 }
