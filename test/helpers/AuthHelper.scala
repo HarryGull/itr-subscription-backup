@@ -41,12 +41,17 @@ object AuthHelper extends MockitoSugar {
 
   def authorityBuilder(confidenceLevel: ConfidenceLevel): Option[Authority] = Some(Authority(uri, oid, userDetailsLink, confidenceLevel))
 
-  def mockGetAuthorityResponse(authority: Option[Authority]): Unit =
+  def setUp(authority: Option[Authority], affinityGroup: Option[String]): Unit = {
     when(mockAuthConnector.getCurrentAuthority()(Matchers.any[HeaderCarrier]())).thenReturn(Future.successful(authority))
+    when(mockAuthConnector.getAffinityGroup(Matchers.anyString)(Matchers.any[HeaderCarrier]())).thenReturn(Future.successful(affinityGroup))
+  }
 
   def mockGetCurrentAuthority(response: HttpResponse): Unit =
     when(mockHttp.GET[HttpResponse](Matchers.eq("localhost/auth/authority"))(Matchers.any(), Matchers.any()))
       .thenReturn(Future.successful(response))
+
+  def mockGetAffinityGroupResponse(response: HttpResponse): Unit =
+    when(mockHttp.GET[HttpResponse](Matchers.eq(s"localhost$uri"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   object Authorities {
     val userCL0 = authorityBuilder(ConfidenceLevel.L0)

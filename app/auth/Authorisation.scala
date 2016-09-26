@@ -27,9 +27,27 @@ trait Authorisation {
 
   val authConnector: AuthConnector
 
-  def authorised(f: => AuthorisationResult => Result)(implicit hc: HeaderCarrier): Future[Result] =
-    authConnector.getCurrentAuthority().map {
-      case Some(authRecord) if authRecord.confidenceLevel >= ConfidenceLevel.L50 => f(Authorised)
-      case _ => f(NotAuthorised)
+  def authorised(f: => AuthorisationResult => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+    for {
+      authority <- authConnector.getCurrentAuthority()
+      affinityGroup <- authConnector.getAffinityGroup(getUri(authority))
+      result <- f(mapToAuthResult(affinityGroup, authority))
+    } yield result
   }
+
+  private def mapToAuthResult(affinityGroup: Option[String], authority: Option[Authority]): AuthorisationResult = {
+    (affinityGroup, authority) match {
+      case (Some(affGroup), Some(authRecord)) => {
+        (affGroup, authRecord.confidenceLevel) match {
+          case ("Organisation", x) if x >= ConfidenceLevel.L50 => Authorised
+          case ("Agent", _) => NotAuthorised
+          case (_, _) => NotAuthorised
+        }
+      }
+      case (_,_) => NotAuthorised
+    }
+  }
+
+  private def getUri(authority: Option[Authority]): String = authority.fold("")(_.uri)
+
 }

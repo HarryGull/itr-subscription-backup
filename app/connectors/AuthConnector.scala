@@ -47,6 +47,19 @@ trait AuthConnector extends ServicesConfig {
       }
     }
   }
+
+  def getAffinityGroup(url: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    val getUrl = s"""$serviceUrl$url"""
+    http.GET[HttpResponse](getUrl).map {
+      response => response.status match {
+        case OK => {
+          val affinityGroup = (response.json \ "affinityGroup").as[String]
+          Some(affinityGroup)
+        }
+        case _ => None
+      }
+    }
+  }
 }
 
 object AuthConnector extends AuthConnector {
