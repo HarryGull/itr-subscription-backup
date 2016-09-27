@@ -30,22 +30,28 @@ class TestControllerSpec extends UnitSpec with WithFakeApplication with FakeRequ
     override val authConnector: AuthConnector = mockAuthConnector
   }
 
-  "A user with No Authority" when {
+  "TestController" should {
+    "use the correct auth connector" in {
+      TestController.authConnector shouldBe AuthConnector
+    }
+  }
+
+  "A user with No Authority and no affinity group" when {
 
     "calling TestController.Hello()" should {
 
       "return a FORBIDDEN response" in {
-        mockGetAuthorityResponse(None)
+        setUp(None, None)
         status(TestTestController.hello()(fakeRequest)) shouldBe Status.FORBIDDEN
       }
     }
   }
 
-  "A user with a Confidence Level of CL50" when {
+  "A user with a Confidence Level of CL50 and is an organisation" when {
 
-    "calling TestCOntroller.Hello()" should {
+    "calling TestController.Hello()" should {
 
-      mockGetAuthorityResponse(userCL50)
+      setUp(userCL50, Some("Organisation"))
       val result = await(TestTestController.hello()(fakeRequest))
 
       "return an OK response" in {
