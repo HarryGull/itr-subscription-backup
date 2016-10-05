@@ -19,5 +19,4 @@ package common
 object GovernmentGatewayConstants {
   val tavcServiceName = "HMRC-TAVC-ORG"
   val tavcReferenceNoType = "tavcRegNumber"
-  val safeId = "SAFEID"
 }
