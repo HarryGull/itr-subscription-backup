@@ -25,10 +25,6 @@ import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
 import uk.gov.hmrc.play.test.UnitSpec
 import helpers.AuthHelper._
-import org.mockito.Matchers
-import org.mockito.Mockito._
-
-import scala.concurrent.Future
 
 class AuthConnectorSpec extends FakeApplication with UnitSpec with MockitoSugar {
 

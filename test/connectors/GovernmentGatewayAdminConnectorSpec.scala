@@ -39,7 +39,7 @@ class GovernmentGatewayAdminConnectorSpec extends FakeApplication with UnitSpec 
     "called for successful set of known facts" should {
       lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List(
         KnownFact("HMRC-TAVC-ORG", "XXTAVC000123456"),
-        KnownFact("postCode", "TF3 4ER")
+        KnownFact("postalCode", "TF3 4ER")
       )))
 
       "return status OK (200)" in {
@@ -50,7 +50,7 @@ class GovernmentGatewayAdminConnectorSpec extends FakeApplication with UnitSpec 
 
     "called for unsuccessful set of known facts" should {
 
-      val unsuccessfulSubscribeJson = Json.parse( """{ "Message": "Your submission contains one or more errors." }""")
+      val unsuccessfulSubscribeJson = Json.parse( """{ "Message": "An error occured" }""")
       lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List()))
 
       "return status BAD_REQUEST (400)" in {

@@ -38,7 +38,7 @@ trait GovernmentGatewayAdminConnector extends ServicesConfig with RawResponseRea
 
     val jsonData = Json.toJson(knownFacts)
     val baseUrl = s"""$serviceURL/government-gateway-admin/service"""
-    val postUrl = s"""$baseUrl/${GovernmentGatewayConstants.tavcServiceName}/$addKnownFactsURI"""
+    val postUrl = s"""$baseUrl/${GovernmentGatewayConstants.tavcReferenceKey}/$addKnownFactsURI"""
 
     http.POST[JsValue, HttpResponse](postUrl, jsonData) map {
       response =>
