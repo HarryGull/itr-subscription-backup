@@ -41,10 +41,11 @@ class GovernmentGatewayAdminConnectorSpec extends FakeApplication with UnitSpec 
         KnownFact("HMRC-TAVC-ORG", "XXTAVC000123456"),
         KnownFact("postalCode", "TF3 4ER")
       )))
+      lazy val response = await(result)
 
       "return status OK (200)" in {
         mockGatewayResponse(HttpResponse(OK))
-        await(result).status shouldBe OK
+        response.status shouldBe OK
       }
     }
 
@@ -52,14 +53,15 @@ class GovernmentGatewayAdminConnectorSpec extends FakeApplication with UnitSpec 
 
       val unsuccessfulSubscribeJson = Json.parse( """{ "Message": "An error occured" }""")
       lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List()))
+      lazy val response = await(result)
 
       "return status BAD_REQUEST (400)" in {
         mockGatewayResponse(HttpResponse(BAD_REQUEST, responseJson = Some(unsuccessfulSubscribeJson)))
-        await(result).status shouldBe BAD_REQUEST
+        response.status shouldBe BAD_REQUEST
       }
 
       "have a Json result with the returned error message" in {
-        await(result).json shouldBe unsuccessfulSubscribeJson
+        response.json shouldBe unsuccessfulSubscribeJson
       }
     }
   }
