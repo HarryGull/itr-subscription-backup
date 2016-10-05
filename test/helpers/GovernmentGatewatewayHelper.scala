@@ -16,7 +16,6 @@
 
 package helpers
 
-import models.{KnownFact, KnownFactsForService}
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -32,11 +31,6 @@ object GovernmentGatewayHelper extends MockitoSugar {
   }
   val mockWSHttp = mock[MockHttp]
   implicit val hc = HeaderCarrier()
-
-  def knownFactsBuilder: List[(String, String)] => KnownFactsForService = keyValuePairs => {
-    val knownFacts = for (keyValuePair <- keyValuePairs) yield KnownFact(keyValuePair._1, keyValuePair._2)
-    KnownFactsForService(knownFacts)
-  }
 
   def mockGatewayResponse(response: HttpResponse): Unit =
     when(mockWSHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).
