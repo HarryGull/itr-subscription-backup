@@ -99,11 +99,11 @@ class SubscribeServiceSpec extends FakeApplication with UnitSpec with MockitoSug
       lazy val result = TestSubscribeServiceSpec.addKnownFacts(HttpResponse(BAD_REQUEST, Some(etmpFailureResponse)), postCode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return a BAD_REQUEST response (400)" in {
         response.status shouldBe BAD_REQUEST
       }
 
-      "return an error message json repsonse" in {
+      "return an error message json response" in {
         response.json shouldBe etmpFailureResponse
       }
     }
