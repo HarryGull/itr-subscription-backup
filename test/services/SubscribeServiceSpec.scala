@@ -22,7 +22,7 @@ import connectors.SubscriptionETMPConnector
 import helpers.Constants._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mock.MockitoSugar
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
+class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach with WithFakeApplication {
 
   val sessionId = UUID.randomUUID.toString
   val mockHttp : WSHttp = mock[WSHttp]
