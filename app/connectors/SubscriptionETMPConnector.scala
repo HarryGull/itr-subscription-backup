@@ -16,26 +16,28 @@
 
 package connectors
 
+import com.typesafe.config.ConfigFactory
 import config.WSHttp
 import model.SubscriptionRequest
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
-object SubscriptionETMPConnector extends SubscriptionETMPConnector with ServicesConfig {
+object SubscriptionETMPConnector extends SubscriptionETMPConnector {
 
   override val serviceUrl = baseUrl("etmp")
   override def http: HttpGet with HttpPost with HttpPut = WSHttp
 }
-trait SubscriptionETMPConnector {
+trait SubscriptionETMPConnector extends ServicesConfig {
 
   def http: HttpGet with HttpPost with HttpPut
   val serviceUrl: String
+  private lazy val config = ConfigFactory.load()
 
   def subscribeToEtmp(safeId: String,subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"
-    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest))
+    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest),Seq("Environment" -> config.getString("environment")))
   }
 }
