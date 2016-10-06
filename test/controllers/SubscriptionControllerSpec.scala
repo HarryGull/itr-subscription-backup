@@ -54,7 +54,7 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
   implicit val hc = HeaderCarrier()
 
   class Setup(status: Int, response: Option[JsValue]) {
-    when(mockSubscriptionService.subscribe(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
+    when(mockSubscriptionService.subscribe(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
       .thenReturn(Future.successful(HttpResponse(status, Some(response.getOrElse(Json.toJson(""""""))))))
     object TestController extends SubscriptionController {
       override val subscriptionService = mockSubscriptionService
@@ -79,8 +79,7 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
 
     "subscribe is called" should {
 
-      "return an OK when a CREATED response is returned from etmp" in new Setup(CREATED,
-        Some(Json.toJson("""{"processingDate" : "2014-12-17T09:30:47Z", "tavcRefNumber" : "YAA1234567890"}"""))) {
+      "return an OK when the full subscription process is completed successfully" in new Setup(OK, None) {
         setUp(userCL50,organisation)
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
           Json.toJson(dummySubscriptionRequestValid.subscriptionType)))

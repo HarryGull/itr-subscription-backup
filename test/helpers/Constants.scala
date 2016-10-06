@@ -16,7 +16,8 @@
 
 package helpers
 
-import model.{CorrespondenceDetailsModel, SubscriptionType, SubscriptionRequest}
+import model.{CorrespondenceDetailsModel, SubscriptionRequest, SubscriptionType}
+import play.api.libs.json.Json
 
 object Constants extends Constants
 
@@ -35,4 +36,23 @@ trait Constants {
   val dummyInvalidSafeID = "YA0001234567890"
   val dummyValidPostcode = "SY76TA"
   val dummyInvalidPostcode = "INVALID_POSTCODE"
+  val dummyValidTavcRegNumber = "XXTAVC000123456"
+  val dummyValidProcessingDate = "2016-10-05T09:30:47Z"
+
+  val etmpSuccessResponse = Json.parse(
+    s"""
+       |{
+       |  "processingDate": "$dummyValidProcessingDate",
+       |  "tavcRegNumber": "$dummyValidTavcRegNumber"
+       |}
+    """.stripMargin
+  )
+
+  val etmpFailureResponse = Json.parse(
+    """
+      |{
+      |  "Message": "An Error Message"
+      |}
+    """.stripMargin
+  )
 }

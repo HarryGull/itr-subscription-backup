@@ -62,9 +62,9 @@ trait SubscriptionController extends BaseController with Authorisation {
         subscriptionApplicationBodyJs.fold(
           errors => Future.successful(BadRequest(Json.toJson(Error(message = "Request to subscribe application failed with validation errors: " + errors)))),
           subscribeRequest => {
-            subscriptionService.subscribe(safeId, SubscriptionRequest(generateAcknowledgementRef(safeId),subscribeRequest)) map { responseReceived =>
+            subscriptionService.subscribe(safeId, SubscriptionRequest(generateAcknowledgementRef(safeId),subscribeRequest), postcode) map { responseReceived =>
               responseReceived.status match {
-                case CREATED => Ok(responseReceived.body)
+                case OK => Ok(responseReceived.body)
                 case NOT_FOUND => NotFound(responseReceived.body)
                 case BAD_REQUEST => BadRequest(responseReceived.body)
                 case SERVICE_UNAVAILABLE => ServiceUnavailable(responseReceived.body)
