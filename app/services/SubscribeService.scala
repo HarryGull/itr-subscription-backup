@@ -32,19 +32,17 @@ trait SubscribeService {
 
   def ggConnector: GovernmentGatewayConnector
 
-  def addEnrolment(ggAdminResponse: HttpResponse, tavcReference: String, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def addEnrolment(ggAdminResponse: HttpResponse, tavcReference: String, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     ggAdminResponse.status match {
       case OK => ggConnector.addEnrolment(enrolmentRequestBuilder(tavcReference, postCode))
       case _ => Future.successful(ggAdminResponse)
     }
-  }
 
-  def enrolmentRequestBuilder(tavcReference: String, postCode: String): EnrolRequestModel = {
+  def enrolmentRequestBuilder(tavcReference: String, postCode: String): EnrolRequestModel =
     EnrolRequestModel(
       GovernmentGatewayConstants.tavcPortalIdentifier,
       GovernmentGatewayConstants.tavcServiceNameKey,
       GovernmentGatewayConstants.tavcFriendlyName,
       List(tavcReference, postCode)
     )
-  }
 }
