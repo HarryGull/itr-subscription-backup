@@ -72,7 +72,7 @@ trait SubscriptionService {
 
   def addEnrolment(ggAdminResponse: HttpResponse, etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     ggAdminResponse.status match {
-      case OK => ggConnector.addEnrolment(enrolmentRequestBuilder("banana", postCode))
+      case OK => ggConnector.addEnrolment(enrolmentRequestBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
       case _ => Future.successful(ggAdminResponse)
     }
 
