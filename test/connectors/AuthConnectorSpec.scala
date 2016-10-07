@@ -23,14 +23,10 @@ import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import helpers.AuthHelper._
-import org.mockito.Matchers
-import org.mockito.Mockito._
 
-import scala.concurrent.Future
-
-class AuthConnectorSpec extends FakeApplication with UnitSpec with MockitoSugar {
+class AuthConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
   object TestAuthConnector extends AuthConnector {
     override def serviceUrl: String = "localhost"
