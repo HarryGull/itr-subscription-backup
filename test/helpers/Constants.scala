@@ -75,4 +75,12 @@ trait Constants {
       |}
     """.stripMargin
   )
+
+  val authenticatorFailureResponse = Json.parse(
+    """
+      |{
+      |  "Message": "An Error Message"
+      |}
+    """.stripMargin
+  )
 }

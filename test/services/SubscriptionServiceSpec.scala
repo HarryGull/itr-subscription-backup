@@ -16,7 +16,7 @@
 
 package services
 
-import connectors.{GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
+import connectors.{AuthenticatorConnector, GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import helpers.FakeRequestHelper
 import play.api.libs.json.Json
 import helpers.Constants._
@@ -28,6 +28,7 @@ import org.mockito.Mockito._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.http.logging.SessionId
 import play.api.test.Helpers._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -37,6 +38,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
     override val subscriptionETMPConnector: SubscriptionETMPConnector = mock[SubscriptionETMPConnector]
     override val ggAdminConnector = mock[GovernmentGatewayAdminConnector]
     override val ggConnector = mock[GovernmentGatewayConnector]
+    override val authenticatorConnector = mock[AuthenticatorConnector]
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testID")))
@@ -50,6 +52,10 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
   def mockGgResponse(response: HttpResponse): Unit = when(TestSubscriptionService.ggConnector.addEnrolment(Matchers.any())(Matchers.any()))
     .thenReturn(Future.successful(response))
 
+  def mockAuthenticatorResponse(response: HttpResponse): Unit =
+    when(TestSubscriptionService.authenticatorConnector.refreshProfile(Matchers.any())).thenReturn(Future.successful(response))
+
+
   "The submission service" should {
     "use the correct ETMP connector" in {
       SubscriptionService.subscriptionETMPConnector shouldBe SubscriptionETMPConnector
@@ -62,22 +68,27 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
     "use the correct gg connector" in {
       SubscriptionService.ggConnector shouldBe GovernmentGatewayConnector
     }
+
+    "use the correct authenticator connector" in {
+      SubscriptionService.authenticatorConnector shouldBe AuthenticatorConnector
+    }
   }
 
   "Calling SubscribeService.subscribe" when {
 
-    "returns successful ETMP Subscription, GG Admin and GG Enrol responses" should {
+    "returns successful ETMP Subscription, GG Admin, GG Enrol and Authenticator responses" should {
 
-      "return an OK response (200)" in {
+      "return an NO_CONTENT response (204)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(OK))
+        mockAuthenticatorResponse(HttpResponse(NO_CONTENT))
         val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
-        await(result).status shouldBe OK
+        await(result).status shouldBe NO_CONTENT
       }
     }
 
-    "returns a NON-Successful etmpResponse" should {
+    "returns a NON-Successful ETMP Subscription" should {
 
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
@@ -93,12 +104,12 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       }
     }
 
-    "returns a successful etmpResponse and NON-successful GG Admin response" should {
+    "returns a successful ETMP Subscription and NON-successful GG Admin response" should {
 
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return an BAD_REQUEST response (400)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(BAD_REQUEST, responseJson = Some(ggAdminFailureResponse)))
         response.status shouldBe BAD_REQUEST
@@ -111,12 +122,12 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       }
     }
 
-    "returns successful etmpResponse and GG Admin responses and a Non-Successful GG Enrol response" should {
+    "returns successful ETMP Subscription and GG Admin responses and a Non-Successful GG Enrol response" should {
 
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return an BAD_REQUEST response (400)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(BAD_REQUEST, Some(ggEnrolFailureResponse)))
@@ -128,6 +139,28 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(BAD_REQUEST, Some(ggEnrolFailureResponse)))
         response.json shouldBe ggEnrolFailureResponse
+      }
+    }
+
+    "returns successful ETMP Subscription, GG Admin and GG Enrol response but Non-Successful Authenticator response" should {
+
+      lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
+      lazy val response = await(result)
+
+      "return an BAD_REQUEST response (400)" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(OK))
+        mockGgResponse(HttpResponse(OK))
+        mockAuthenticatorResponse(HttpResponse(BAD_REQUEST, responseJson = Some(authenticatorFailureResponse)))
+        response.status shouldBe BAD_REQUEST
+      }
+
+      "return Json error message" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(OK))
+        mockGgResponse(HttpResponse(OK))
+        mockAuthenticatorResponse(HttpResponse(BAD_REQUEST, responseJson = Some(authenticatorFailureResponse)))
+        response.json shouldBe authenticatorFailureResponse
       }
     }
   }
@@ -234,6 +267,26 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
 
       "return an error message json response" in {
         response.json shouldBe ggAdminFailureResponse
+      }
+    }
+  }
+
+  "Calling SubscribeService.refreshAuthProfile" should {
+    "return the response propagated" when {
+      "Return status NO_CONTENT (204)" in {
+        mockAuthenticatorResponse(HttpResponse(NO_CONTENT))
+        val result = TestSubscriptionService.refreshAuthProfile(
+          ggResponse = HttpResponse(OK)
+        )
+        await(result).status shouldBe NO_CONTENT
+      }
+
+      "Return status BAD_REQUEST (400)" in {
+        mockAuthenticatorResponse(HttpResponse(BAD_REQUEST))
+        val result = TestSubscriptionService.refreshAuthProfile(
+          ggResponse = HttpResponse(OK)
+        )
+        await(result).status shouldBe BAD_REQUEST
       }
     }
   }

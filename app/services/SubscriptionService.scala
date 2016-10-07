@@ -34,7 +34,7 @@ package services
 
 import common.GovernmentGatewayConstants
 import common.GovernmentGatewayConstants._
-import connectors.{GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
+import connectors.{AuthenticatorConnector, GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import model.SubscriptionRequest
 import models.ggEnrolment.EnrolRequestModel
 import models.{KnownFact, KnownFactsForService}
@@ -47,6 +47,7 @@ object SubscriptionService extends SubscriptionService{
   val subscriptionETMPConnector: SubscriptionETMPConnector = SubscriptionETMPConnector
   val ggAdminConnector: GovernmentGatewayAdminConnector = GovernmentGatewayAdminConnector
   val ggConnector: GovernmentGatewayConnector = GovernmentGatewayConnector
+  val authenticatorConnector: AuthenticatorConnector = AuthenticatorConnector
 }
 
 trait SubscriptionService {
@@ -54,6 +55,7 @@ trait SubscriptionService {
   val subscriptionETMPConnector: SubscriptionETMPConnector
   val ggAdminConnector: GovernmentGatewayAdminConnector
   val ggConnector: GovernmentGatewayConnector
+  val authenticatorConnector: AuthenticatorConnector
 
   def subscribe(safeId: String,
                 subscriptionRequest: SubscriptionRequest,
@@ -62,7 +64,8 @@ trait SubscriptionService {
       etmpResponse <- subscriptionETMPConnector.subscribeToEtmp(safeId,subscriptionRequest)
       ggAdminResponse <- addKnownFacts(etmpResponse, postcode)
       ggResponse <- addEnrolment(ggAdminResponse, etmpResponse, postcode)
-    } yield ggResponse
+      refreshAuthProfileResponse <- refreshAuthProfile(ggResponse)
+    } yield refreshAuthProfileResponse
 
   def addKnownFacts(etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     etmpResponse.status match {
@@ -74,6 +77,12 @@ trait SubscriptionService {
     ggAdminResponse.status match {
       case OK => ggConnector.addEnrolment(enrolmentRequestBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
       case _ => Future.successful(ggAdminResponse)
+    }
+
+  def refreshAuthProfile(ggResponse: HttpResponse)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    ggResponse.status match {
+      case OK => authenticatorConnector.refreshProfile
+      case _ => Future.successful(ggResponse)
     }
 
   def knownFactsBuilder(tavReference: String, postCode: String): KnownFactsForService = {
