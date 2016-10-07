@@ -65,7 +65,7 @@ trait SubscriptionController extends BaseController with Authorisation {
             subscriptionService.subscribe(safeId, SubscriptionRequest(generateAcknowledgementRef(safeId),subscribeRequest), postcode) map { responseReceived =>
               responseReceived.status match {
                 case OK => Ok(responseReceived.body)
-                case CREATED => Ok(responseReceived.body)
+                case CREATED => Created(responseReceived.body)
                 case NO_CONTENT => NoContent
                 case NOT_FOUND => NotFound(responseReceived.body)
                 case BAD_REQUEST => BadRequest(responseReceived.body)

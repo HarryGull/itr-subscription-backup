@@ -78,13 +78,13 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
 
     "returns successful ETMP Subscription, GG Admin, GG Enrol and Authenticator responses" should {
 
-      "return an OK response (200)" in {
+      "return an NO_CONTENT response (204)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(OK))
-        mockAuthenticatorResponse(HttpResponse(OK))
+        mockAuthenticatorResponse(HttpResponse(NO_CONTENT))
         val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
-        await(result).status shouldBe OK
+        await(result).status shouldBe NO_CONTENT
       }
     }
 
@@ -109,7 +109,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return an BAD_REQUEST response (400)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(BAD_REQUEST, responseJson = Some(ggAdminFailureResponse)))
         response.status shouldBe BAD_REQUEST
@@ -127,7 +127,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return an BAD_REQUEST response (400)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(BAD_REQUEST, Some(ggEnrolFailureResponse)))
@@ -147,7 +147,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
       lazy val response = await(result)
 
-      "return an OK response (200)" in {
+      "return an BAD_REQUEST response (400)" in {
         mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
         mockGgAdminResponse(HttpResponse(OK))
         mockGgResponse(HttpResponse(OK))

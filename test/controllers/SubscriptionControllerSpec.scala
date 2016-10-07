@@ -116,6 +116,13 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
         status(result) shouldBe NO_CONTENT
       }
 
+      "return a CREATED when a CREATED response is returned from the subscribe service" in new Setup(CREATED, None) {
+        setUp(userCL50,organisation)
+        val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
+          Json.toJson(dummySubscriptionRequestDuplicate.subscriptionType)))
+        status(result) shouldBe CREATED
+      }
+
       "return a ServiceUnavailable when a ServiceUnavailable is returned from the subscribe service" in new Setup(SERVICE_UNAVAILABLE,
         Some(Json.toJson("""{"reason" : "Service Unavailable"}"""))) {
         setUp(userCL50,organisation)
