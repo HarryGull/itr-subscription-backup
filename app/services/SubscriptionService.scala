@@ -32,9 +32,11 @@
 
 package services
 
+import common.GovernmentGatewayConstants
 import common.GovernmentGatewayConstants._
-import connectors.{GovernmentGatewayAdminConnector, SubscriptionETMPConnector}
+import connectors.{GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import model.SubscriptionRequest
+import models.ggEnrolment.EnrolRequestModel
 import models.{KnownFact, KnownFactsForService}
 import play.api.http.Status._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
@@ -44,12 +46,14 @@ import scala.concurrent.{ExecutionContext, Future}
 object SubscriptionService extends SubscriptionService{
   val subscriptionETMPConnector: SubscriptionETMPConnector = SubscriptionETMPConnector
   val ggAdminConnector: GovernmentGatewayAdminConnector = GovernmentGatewayAdminConnector
+  val ggConnector: GovernmentGatewayConnector = GovernmentGatewayConnector
 }
 
 trait SubscriptionService {
 
   val subscriptionETMPConnector: SubscriptionETMPConnector
   val ggAdminConnector: GovernmentGatewayAdminConnector
+  val ggConnector: GovernmentGatewayConnector
 
   def subscribe(safeId: String,
                 subscriptionRequest: SubscriptionRequest,
@@ -57,17 +61,32 @@ trait SubscriptionService {
     for {
       etmpResponse <- subscriptionETMPConnector.subscribeToEtmp(safeId,subscriptionRequest)
       ggAdminResponse <- addKnownFacts(etmpResponse, postcode)
-    } yield ggAdminResponse
+      ggResponse <- addEnrolment(ggAdminResponse, etmpResponse, postcode)
+    } yield ggResponse
 
   def addKnownFacts(etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     etmpResponse.status match {
-      case CREATED => ggAdminConnector.addKnownFacts(knownFactsBuilder(etmpResponse, postCode))
+      case CREATED => ggAdminConnector.addKnownFacts(knownFactsBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
       case _ => Future.successful(etmpResponse)
     }
 
-  def knownFactsBuilder(etmpResponse: HttpResponse, postCode: String): KnownFactsForService = {
-    val knownFact1 = KnownFact(tavcReferenceKey, (etmpResponse.json \ tavcReferenceKey).as[String])
+  def addEnrolment(ggAdminResponse: HttpResponse, etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    ggAdminResponse.status match {
+      case OK => ggConnector.addEnrolment(enrolmentRequestBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
+      case _ => Future.successful(ggAdminResponse)
+    }
+
+  def knownFactsBuilder(tavReference: String, postCode: String): KnownFactsForService = {
+    val knownFact1 = KnownFact(tavcReferenceKey, tavReference)
     val knownFact2 = KnownFact(postCodeKey, postCode)
     KnownFactsForService(List(knownFact1, knownFact2))
   }
+
+  def enrolmentRequestBuilder(tavcReference: String, postCode: String): EnrolRequestModel =
+    EnrolRequestModel(
+      GovernmentGatewayConstants.tavcPortalIdentifier,
+      GovernmentGatewayConstants.tavcServiceNameKey,
+      GovernmentGatewayConstants.tavcFriendlyName,
+      List(tavcReference, postCode)
+    )
 }

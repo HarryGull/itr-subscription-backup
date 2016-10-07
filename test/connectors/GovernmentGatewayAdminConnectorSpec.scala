@@ -22,11 +22,11 @@ import play.api.test.FakeApplication
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import helpers.GovernmentGatewayHelper._
 import models.{KnownFact, KnownFactsForService}
 
-class GovernmentGatewayAdminConnectorSpec extends FakeApplication with UnitSpec with MockitoSugar with FakeRequestHelper {
+class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with WithFakeApplication {
 
   object TestGGAdminConnector extends GovernmentGatewayAdminConnector {
     override val serviceURL = "government-gateway-admin"

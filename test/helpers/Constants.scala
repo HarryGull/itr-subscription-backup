@@ -22,6 +22,10 @@ import play.api.libs.json.Json
 object Constants extends Constants
 
 trait Constants {
+
+  val friendlyServiceName = "Tax Advantaged Venture Capital Schemes Enrolment"
+  val portalId = "Default"
+  val serviceName = "HMRC-TAVC-ORG"
   val dummyCorrespondenceDetails = CorrespondenceDetailsModel(None,None,None)
   val dummySubscriptionType = SubscriptionType(dummyCorrespondenceDetails)
   val dummySubscriptionRequestValid = SubscriptionRequest("TAVCUNIQUEREF", dummySubscriptionType)
@@ -49,6 +53,22 @@ trait Constants {
   )
 
   val etmpFailureResponse = Json.parse(
+    """
+      |{
+      |  "Message": "An Error Message"
+      |}
+    """.stripMargin
+  )
+
+  val ggAdminFailureResponse = Json.parse(
+    """
+      |{
+      |  "Message": "An Error Message"
+      |}
+    """.stripMargin
+  )
+
+  val ggEnrolFailureResponse = Json.parse(
     """
       |{
       |  "Message": "An Error Message"

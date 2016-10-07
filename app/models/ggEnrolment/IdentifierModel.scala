@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package connectors
+package models.ggEnrolment
 
-import uk.gov.hmrc.play.http.{HttpReads, HttpResponse}
+import play.api.libs.json.Json
 
-trait RawResponseReads {
+case class IdentifierModel(`type`: String, value: String)
 
-  implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse) = response
-  }
-
+object IdentifierModel {
+  implicit val formats = Json.format[IdentifierModel]
 }

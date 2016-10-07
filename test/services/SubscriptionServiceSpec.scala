@@ -16,10 +16,9 @@
 
 package services
 
-import connectors.GovernmentGatewayAdminConnector
+import connectors.{GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import helpers.FakeRequestHelper
 import play.api.libs.json.Json
-import connectors.SubscriptionETMPConnector
 import helpers.Constants._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mock.MockitoSugar
@@ -37,6 +36,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
   object TestSubscriptionService extends SubscriptionService {
     override val subscriptionETMPConnector: SubscriptionETMPConnector = mock[SubscriptionETMPConnector]
     override val ggAdminConnector = mock[GovernmentGatewayAdminConnector]
+    override val ggConnector = mock[GovernmentGatewayConnector]
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testID")))
@@ -47,6 +47,9 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
   def mockGgAdminResponse(response: HttpResponse): Unit = when(TestSubscriptionService.ggAdminConnector.addKnownFacts(Matchers.any())(Matchers.any()))
     .thenReturn(Future.successful(response))
 
+  def mockGgResponse(response: HttpResponse): Unit = when(TestSubscriptionService.ggConnector.addEnrolment(Matchers.any())(Matchers.any()))
+    .thenReturn(Future.successful(response))
+
   "The submission service" should {
     "use the correct ETMP connector" in {
       SubscriptionService.subscriptionETMPConnector shouldBe SubscriptionETMPConnector
@@ -55,12 +58,84 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
     "use the correct ggAdmin connector" in {
       SubscriptionService.ggAdminConnector shouldBe GovernmentGatewayAdminConnector
     }
+
+    "use the correct gg connector" in {
+      SubscriptionService.ggConnector shouldBe GovernmentGatewayConnector
+    }
+  }
+
+  "Calling SubscribeService.subscribe" when {
+
+    "returns successful ETMP Subscription, GG Admin and GG Enrol responses" should {
+
+      "return an OK response (200)" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(OK))
+        mockGgResponse(HttpResponse(OK))
+        val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
+        await(result).status shouldBe OK
+      }
+    }
+
+    "returns a NON-Successful etmpResponse" should {
+
+      lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
+      lazy val response = await(result)
+
+      "return an BAD_REQUEST response (400)" in {
+        mockEtmpResponse(HttpResponse(BAD_REQUEST, Some(etmpFailureResponse)))
+        response.status shouldBe BAD_REQUEST
+      }
+
+      "return Json error message" in {
+        mockEtmpResponse(HttpResponse(BAD_REQUEST, Some(etmpFailureResponse)))
+        response.json shouldBe etmpFailureResponse
+      }
+    }
+
+    "returns a successful etmpResponse and NON-successful GG Admin response" should {
+
+      lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
+      lazy val response = await(result)
+
+      "return an OK response (200)" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(BAD_REQUEST, responseJson = Some(ggAdminFailureResponse)))
+        response.status shouldBe BAD_REQUEST
+      }
+
+      "return Json error message" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(BAD_REQUEST, responseJson = Some(ggAdminFailureResponse)))
+        response.json shouldBe ggAdminFailureResponse
+      }
+    }
+
+    "returns successful etmpResponse and GG Admin responses and a Non-Successful GG Enrol response" should {
+
+      lazy val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
+      lazy val response = await(result)
+
+      "return an OK response (200)" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(OK))
+        mockGgResponse(HttpResponse(BAD_REQUEST, Some(ggEnrolFailureResponse)))
+        response.status shouldBe BAD_REQUEST
+      }
+
+      "return Json error message" in {
+        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
+        mockGgAdminResponse(HttpResponse(OK))
+        mockGgResponse(HttpResponse(BAD_REQUEST, Some(ggEnrolFailureResponse)))
+        response.json shouldBe ggEnrolFailureResponse
+      }
+    }
   }
 
   "Calling SubscribeService.knownFactsBuilder" when {
 
     "given an OK response from ETMP which includes the tavcRegNumber" should {
-      lazy val result = TestSubscriptionService.knownFactsBuilder(HttpResponse(OK, Some(etmpSuccessResponse)), dummyValidPostcode)
+      lazy val result = TestSubscriptionService.knownFactsBuilder(dummyValidTavcRegNumber, dummyValidPostcode)
       lazy val response = await(result)
 
       val expectedJson = Json.parse(
@@ -106,34 +181,59 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
     }
   }
 
-  "Calling SubscribeService.subscribe" when {
+  "Calling SubscribeService.enrolmentRequestBuilder" when {
 
-    "returns a successful etmpResponse and successful GG Admin response" should {
+    "provided with the tavcReference and postCode" should {
+      lazy val result = TestSubscriptionService.enrolmentRequestBuilder(dummyValidTavcRegNumber, dummyValidPostcode)
+      lazy val response = await(result)
+
+      val expectedJson = Json.parse(
+        s"""
+           | {
+           |    "portalId":"$portalId",
+           |    "serviceName":"$serviceName",
+           |    "friendlyName":"$friendlyServiceName",
+           |    "knownFacts": [ "$dummyValidTavcRegNumber", "$dummyValidPostcode" ]
+           | }
+        """.stripMargin
+      )
+
+      "Generate a Json object in the correct format to be posted to GG-Admin" in {
+        Json.toJson(response) shouldBe expectedJson
+      }
+    }
+  }
+
+  "Calling SubscribeService.addEnrolment" when {
+
+    "given an OK response from GG Admin" should {
+      lazy val result = TestSubscriptionService.addEnrolment(
+        ggAdminResponse = HttpResponse(OK),
+        etmpResponse = HttpResponse(CREATED, responseJson = Some(etmpSuccessResponse)),
+        postCode = dummyValidPostcode
+      )
+      lazy val response = await(result)
 
       "return an OK response (200)" in {
-        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
-        mockGgAdminResponse(HttpResponse(OK))
-        val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
-        await(result).status shouldBe OK
+        when(TestSubscriptionService.ggConnector.addEnrolment(Matchers.any())(Matchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+        response.status shouldBe OK
       }
     }
 
-    "returns a NON-Successful etmpResponse" should {
+    "given a response other than OK from GG Admin" should {
+      lazy val result = TestSubscriptionService.addEnrolment(
+        ggAdminResponse = HttpResponse(BAD_REQUEST, responseJson = Some(ggAdminFailureResponse)),
+        etmpResponse = HttpResponse(CREATED, responseJson = Some(etmpSuccessResponse)),
+        postCode = dummyValidPostcode
+      )
+      lazy val response = await(result)
 
-      "return an BAD_REQUEST response (400)" in {
-        mockEtmpResponse(HttpResponse(BAD_REQUEST, Some(etmpFailureResponse)))
-        val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
-        await(result).status shouldBe BAD_REQUEST
+      "return a BAD_REQUEST response (400)" in {
+        response.status shouldBe BAD_REQUEST
       }
-    }
 
-    "returns a successful etmpResponse and NON-successful GG Admin response" should {
-
-      "return an OK response (200)" in {
-        mockEtmpResponse(HttpResponse(CREATED, Some(etmpSuccessResponse)))
-        mockGgAdminResponse(HttpResponse(BAD_REQUEST))
-        val result = TestSubscriptionService.subscribe(dummyValidSafeID, dummySubscriptionRequestValid, dummyValidPostcode)
-        await(result).status shouldBe BAD_REQUEST
+      "return an error message json response" in {
+        response.json shouldBe ggAdminFailureResponse
       }
     }
   }
