@@ -61,4 +61,8 @@ object AuthHelper extends MockitoSugar {
     val userCL300 = authorityBuilder(ConfidenceLevel.L300)
     val userCL500 = authorityBuilder(ConfidenceLevel.L500)
   }
+
+  object AffinityGroups {
+   val organisation = Some("Organisation")
+  }
 }

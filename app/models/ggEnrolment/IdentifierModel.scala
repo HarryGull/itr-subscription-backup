@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package services
+package models.ggEnrolment
 
-import connectors.AuthenticatorConnector
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import play.api.libs.json.Json
 
-import scala.concurrent.Future
+case class IdentifierModel(`type`: String, value: String)
 
-object SubscribeService extends SubscribeService {
-  val authenticatorConnector: AuthenticatorConnector = AuthenticatorConnector
-}
-
-trait SubscribeService {
-
-  val authenticatorConnector: AuthenticatorConnector
-
-  def refreshAuthProfile(implicit hc: HeaderCarrier): Future[HttpResponse]  = authenticatorConnector.refreshProfile
+object IdentifierModel {
+  implicit val formats = Json.format[IdentifierModel]
 }
