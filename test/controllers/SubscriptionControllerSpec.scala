@@ -86,7 +86,7 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
         status(result) shouldBe OK
       }
 
-      "return a Not Found when a Not Found response is returned from etmp" in new Setup(NOT_FOUND, None) {
+      "return a Not Found when a Not Found response is returned from the subscribe service" in new Setup(NOT_FOUND, None) {
         setUp(userCL50,organisation)
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
           Json.toJson(dummySubscriptionRequestNotFound.subscriptionType)))
@@ -94,15 +94,29 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
       }
 
 
-      "return a BadRequest when a Bad Request response is returned from etmp" in new Setup(BAD_REQUEST,  Some(Json.toJson("""{"reason" : "Error 400"}"""))) {
+      "return a BadRequest when a Bad Request response is returned from the subscribe service" in
+      new Setup(BAD_REQUEST,  Some(Json.toJson("""{"reason" : "Error 400"}"""))) {
         setUp(userCL50,organisation)
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
           Json.toJson(dummySubscriptionRequestDuplicate.subscriptionType)))
         status(result) shouldBe BAD_REQUEST
       }
 
+      "return an OK when an OK response is returned from the subscribe service" in new Setup(OK, None) {
+          setUp(userCL50,organisation)
+          val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
+            Json.toJson(dummySubscriptionRequestDuplicate.subscriptionType)))
+          status(result) shouldBe OK
+        }
 
-      "return a ServiceUnavailable when a ServiceUnavailable is returned from etmp" in new Setup(SERVICE_UNAVAILABLE,
+      "return a NO_CONTENT when a NO_CONTENT response is returned from the subscribe service" in new Setup(NO_CONTENT, None) {
+        setUp(userCL50,organisation)
+        val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
+          Json.toJson(dummySubscriptionRequestDuplicate.subscriptionType)))
+        status(result) shouldBe NO_CONTENT
+      }
+
+      "return a ServiceUnavailable when a ServiceUnavailable is returned from the subscribe service" in new Setup(SERVICE_UNAVAILABLE,
         Some(Json.toJson("""{"reason" : "Service Unavailable"}"""))) {
         setUp(userCL50,organisation)
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
@@ -110,7 +124,7 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
         status(result) shouldBe SERVICE_UNAVAILABLE
       }
 
-      "return an Internal Server error when any other response is returned from etmp" in new Setup(INTERNAL_SERVER_ERROR,
+      "return an Internal Server error when any other response is returned from the subscribe service" in new Setup(INTERNAL_SERVER_ERROR,
         Some(Json.toJson( Json.toJson("""Server error""")))) {
         setUp(userCL50,organisation)
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode).apply(FakeRequest().withBody(
