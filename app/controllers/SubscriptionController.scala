@@ -63,15 +63,7 @@ trait SubscriptionController extends BaseController with Authorisation {
           errors => Future.successful(BadRequest(Json.toJson(Error(message = "Request to subscribe application failed with validation errors: " + errors)))),
           subscribeRequest => {
             subscriptionService.subscribe(safeId, SubscriptionRequest(generateAcknowledgementRef(safeId),subscribeRequest), postcode) map { responseReceived =>
-              responseReceived.status match {
-                case OK => Ok(responseReceived.body)
-                case CREATED => Created(responseReceived.body)
-                case NO_CONTENT => NoContent
-                case NOT_FOUND => NotFound(responseReceived.body)
-                case BAD_REQUEST => BadRequest(responseReceived.body)
-                case SERVICE_UNAVAILABLE => ServiceUnavailable(responseReceived.body)
-                case _ => InternalServerError(responseReceived.body)
-              }
+              Status(responseReceived.status)(responseReceived.body)
             }
           }
         )
@@ -83,7 +75,7 @@ trait SubscriptionController extends BaseController with Authorisation {
   /** Randomly generate acknowledgementReference, must be between 1 and 32 characters long**/
   private def generateAcknowledgementRef(safeId: String): String =  {
     val ackRef = safeId concat  (System.currentTimeMillis / 1000).toString
-    ackRef.substring(0, min(ackRef.length(), 31));
+    ackRef.substring(0, min(ackRef.length(), 31))
   }
 
 }
