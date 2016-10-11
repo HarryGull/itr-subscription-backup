@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object SubscriptionETMPConnector extends SubscriptionETMPConnector {
 
-  override val serviceUrl = baseUrl("etmp")
+  override val serviceUrl = baseUrl("des")
   override def http: HttpGet with HttpPost with HttpPut = WSHttp
 }
 trait SubscriptionETMPConnector extends ServicesConfig {
