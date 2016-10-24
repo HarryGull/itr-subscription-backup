@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package common
+package metrics
 
-object GovernmentGatewayConstants {
-  val tavcServiceNameKey = "HMRC-TAVC-ORG"
-  val tavcReferenceKey = "tavcRegNumber"
-  val postCodeKey = "postalCode"
-  val tavcPortalIdentifier = "Default"
-  val tavcFriendlyName = "Tax Advantaged Venture Capital Schemes Enrolment"
+object MetricsEnum extends Enumeration {
+
+  type MetricsEnum = Value
+
+  val TAVC_SUBSCRIPTION = Value
+
 }
-

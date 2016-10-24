@@ -17,7 +17,7 @@
 package connectors
 
 import config.WSHttp
-import helpers.Constants._
+import helpers.TestHelper._
 import uk.gov.hmrc.play.test.WithFakeApplication
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import java.util.UUID

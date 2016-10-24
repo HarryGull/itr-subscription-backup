@@ -16,11 +16,9 @@
 
 package common
 
-object GovernmentGatewayConstants {
-  val tavcServiceNameKey = "HMRC-TAVC-ORG"
-  val tavcReferenceKey = "tavcRegNumber"
-  val postCodeKey = "postalCode"
-  val tavcPortalIdentifier = "Default"
-  val tavcFriendlyName = "Tax Advantaged Venture Capital Schemes Enrolment"
+object AuditConstants {
+  val transactionName =  "tavc-service-subscription"
+  val subscibeAuditType =  "CreateTavcSubscription"
+  val noValueProvided =  "Not Provided"
+  val notApplicable =  "NA"
 }
-
