@@ -24,6 +24,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.mock.MockitoSugar
 import play.api.mvc.Result
 import play.api.mvc.Results._
+import services.AuditService
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpPost, HttpResponse}
 
@@ -35,6 +36,7 @@ object AuthHelper extends MockitoSugar {
   val uri = s"""/x/y/$oid"""
   val userDetailsLink = "bar"
   val mockAuthConnector = mock[AuthConnector]
+  val mockAuditService = mock[AuditService]
   val mockHttp = mock[HttpGet with HttpPost]
 
   implicit val hc = HeaderCarrier()

@@ -19,7 +19,7 @@ import helpers.AuthHelper.Authorities._
 import helpers.AuthHelper.AffinityGroups._
 import connectors.AuthConnector
 import helpers.AuthHelper._
-import helpers.Constants
+import helpers.TestHelper
 import model.SubscriptionResponse
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
@@ -29,13 +29,12 @@ import org.mockito.Mockito._
 import play.api.test.Helpers._
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import Constants._
 import org.scalatest.BeforeAndAfter
-import services.SubscriptionService
+import services.{AuditService, SubscriptionService}
 
 import scala.concurrent.Future
 
-class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfter {
+class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfter with TestHelper{
 
   val mockSubscriptionService = mock[SubscriptionService]
 
@@ -59,6 +58,7 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
     object TestController extends SubscriptionController {
       override val subscriptionService = mockSubscriptionService
       override val authConnector = mockAuthConnector
+      override val auditService = mockAuditService
     }
   }
 
@@ -72,6 +72,9 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
     }
     "use the correct subscription service" in {
       SubscriptionController.subscriptionService shouldBe SubscriptionService
+    }
+    "use the correct audit service" in {
+      SubscriptionController.auditService shouldBe AuditService
     }
   }
 

@@ -19,7 +19,7 @@ package services
 import connectors.{AuthenticatorConnector, GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import helpers.FakeRequestHelper
 import play.api.libs.json.Json
-import helpers.Constants._
+import helpers.TestHelper._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}

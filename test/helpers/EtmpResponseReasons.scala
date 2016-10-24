@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package common
+package helpers
 
-object GovernmentGatewayConstants {
-  val tavcServiceNameKey = "HMRC-TAVC-ORG"
-  val tavcReferenceKey = "tavcRegNumber"
-  val postCodeKey = "postalCode"
-  val tavcPortalIdentifier = "Default"
-  val tavcFriendlyName = "Tax Advantaged Venture Capital Schemes Enrolment"
+object EtmpResponseReasons {
+  val success = "Success"
+  val duplicateSubmission400 = "Duplicate submission acknowledgement reference from remote endpoint returned"
+  val errors400 = "Your submission contains one or more errors"
+  val invalidJson400 = "Invalid JSON message received"
+  val notFound404 = "Resource not found"
+  val serverError500 = "Server error"
+  val sapError500 = "SAP_NUMBER missing or invalid"
+  val noRegime500 = "REGIME missing or invalid"
+  val notProcessed503 = "Request could not be processed on remote endpoint"
+  val unavailble503 = "Service unavailable"
 }
-

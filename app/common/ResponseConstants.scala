@@ -16,11 +16,11 @@
 
 package common
 
-object GovernmentGatewayConstants {
-  val tavcServiceNameKey = "HMRC-TAVC-ORG"
-  val tavcReferenceKey = "tavcRegNumber"
-  val postCodeKey = "postalCode"
-  val tavcPortalIdentifier = "Default"
-  val tavcFriendlyName = "Tax Advantaged Venture Capital Schemes Enrolment"
+object ResponseConstants {
+  val success = "Success"
+  val defaultNotFound = "The remote endpoint has indicated that no data can be found"
+  val defaultBadRequest = "Bad Request"
+  val defaultServiceUnavailable = "Service Unavailable"
+  val defaultInternalServerError = "Internal Server Error"
+  val defaultOther = "Unsuccessful return of data"
 }
-
