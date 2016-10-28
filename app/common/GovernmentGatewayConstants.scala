@@ -18,9 +18,11 @@ package common
 
 object GovernmentGatewayConstants {
   val tavcServiceNameKey = "HMRC-TAVC-ORG"
-  val tavcReferenceKey = "tavcRegNumber"
-  val postCodeKey = "postalCode"
+  val etmpReferenceKey = "tavcRegNumber"
+  val etmpPostcodeKey = "postalCode"
+  val tavcReferenceKey = "TAVCRef"
+  val tavcPostcodeKey = "Postcode"
   val tavcPortalIdentifier = "Default"
-  val tavcFriendlyName = "Tax Advantaged Venture Capital Schemes Enrolment"
+  val tavcFriendlyName = "Get tax relief for your investors"
 }
 

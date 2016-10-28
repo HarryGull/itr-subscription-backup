@@ -175,8 +175,8 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
         s"""
           |{
           |  "facts":[
-          |     {"type":"tavcRegNumber","value":"$dummyValidTavcRegNumber"},
-          |     {"type":"postalCode","value":"$dummyValidPostcode"}
+          |     {"type":"TAVCRef","value":"$dummyValidTavcRegNumber"},
+          |     {"type":"Postcode","value":"$dummyValidPostcode"}
           |  ]
           |}
         """.stripMargin

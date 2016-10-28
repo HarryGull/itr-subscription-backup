@@ -27,7 +27,7 @@ object TestHelper extends TestHelper
 
 trait TestHelper {
 
-  val friendlyServiceName = "Tax Advantaged Venture Capital Schemes Enrolment"
+  val friendlyServiceName = "Get tax relief for your investors"
   val portalId = "Default"
   val serviceName = "HMRC-TAVC-ORG"
   val dummyCorrespondenceDetails = CorrespondenceDetailsModel(None,None,None)

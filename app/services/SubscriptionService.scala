@@ -69,13 +69,13 @@ trait SubscriptionService {
 
   def addKnownFacts(etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     etmpResponse.status match {
-      case CREATED => ggAdminConnector.addKnownFacts(knownFactsBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
+      case CREATED => ggAdminConnector.addKnownFacts(knownFactsBuilder((etmpResponse.json \ etmpReferenceKey).as[String], postCode))
       case _ => Future.successful(etmpResponse)
     }
 
   def addEnrolment(ggAdminResponse: HttpResponse, etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     ggAdminResponse.status match {
-      case OK => ggConnector.addEnrolment(enrolmentRequestBuilder((etmpResponse.json \ tavcReferenceKey).as[String], postCode))
+      case OK => ggConnector.addEnrolment(enrolmentRequestBuilder((etmpResponse.json \ etmpReferenceKey).as[String], postCode))
       case _ => Future.successful(ggAdminResponse)
     }
 
@@ -87,7 +87,7 @@ trait SubscriptionService {
 
   def knownFactsBuilder(tavReference: String, postCode: String): KnownFactsForService = {
     val knownFact1 = KnownFact(tavcReferenceKey, tavReference)
-    val knownFact2 = KnownFact(postCodeKey, postCode)
+    val knownFact2 = KnownFact(tavcPostcodeKey, postCode)
     KnownFactsForService(List(knownFact1, knownFact2))
   }
 
