@@ -15,6 +15,7 @@
  */
 
 package controllers
+import common.GetSubscriptionResponses
 import helpers.AuthHelper.Authorities._
 import helpers.AuthHelper.AffinityGroups._
 import connectors.AuthConnector
@@ -54,6 +55,16 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
 
   class Setup(status: Int, response: Option[JsValue]) {
     when(mockSubscriptionService.subscribe(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(HttpResponse(status, Some(response.getOrElse(Json.toJson(""""""))))))
+    object TestController extends SubscriptionController {
+      override val subscriptionService = mockSubscriptionService
+      override val authConnector = mockAuthConnector
+      override val auditService = mockAuditService
+    }
+  }
+
+  class SetupGetSubscription(status: Int, response: Option[JsValue]) {
+    when(mockSubscriptionService.getSubscription(Matchers.any())(Matchers.any(), Matchers.any()))
       .thenReturn(Future.successful(HttpResponse(status, Some(response.getOrElse(Json.toJson(""""""))))))
     object TestController extends SubscriptionController {
       override val subscriptionService = mockSubscriptionService
@@ -159,6 +170,33 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFak
         val result = TestController.subscribe(dummyValidSafeID,dummyValidPostcode)(FakeRequest().withBody(Json.toJson(dummySubscriptionRequestValid)))
         status(result) shouldBe FORBIDDEN
       }
+    }
+  }
+
+  "SubscriptionController.getSubscription with a valid Tavc Rreference Number" when {
+    "return a ServiceUnavailable when a ServiceUnavailable is returned from the subscription service" in new SetupGetSubscription(SERVICE_UNAVAILABLE,
+      Some(Json.toJson("""{"reason" : "Service Unavailable"}"""))) {
+      setUp(userCL50, organisation)
+      val result = TestController.getSubscription(dummyValidTavcRegNumber).apply(FakeRequest())
+      status(result) shouldBe SERVICE_UNAVAILABLE
+    }
+  }
+
+  "SubscriptionController.getSubscription with a valid Tavc Rreference Number" when {
+    "return a Bad request when a BadRequest is returned from the subscription service" in new SetupGetSubscription(BAD_REQUEST,
+      Some(Json.toJson("""{"reason" : "Invalid JSON message received"}"""))) {
+      setUp(userCL50, organisation)
+      val result = TestController.getSubscription(dummyValidTavcRegNumber).apply(FakeRequest())
+      status(result) shouldBe BAD_REQUEST
+    }
+  }
+
+  "SubscriptionController.getSubscription with a valid Tavc Rreference Number" when {
+    "return the full expected json response request when an OK and matching record is returned from the subscription service" in new SetupGetSubscription(OK,
+      Some(GetSubscriptionResponses.getSubFull)) {
+      setUp(userCL50, organisation)
+      val result = TestController.getSubscription(dummyValidTavcRegNumber).apply(FakeRequest())
+      status(result) shouldBe OK
     }
   }
 
