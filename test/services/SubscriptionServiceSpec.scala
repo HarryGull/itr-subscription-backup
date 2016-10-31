@@ -16,6 +16,7 @@
 
 package services
 
+import common.GetSubscriptionResponses
 import connectors.{AuthenticatorConnector, GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
 import helpers.FakeRequestHelper
 import play.api.libs.json.Json
@@ -28,6 +29,7 @@ import org.mockito.Mockito._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.http.logging.SessionId
 import play.api.test.Helpers._
+import org.scalatest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -44,6 +46,10 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testID")))
 
   def mockEtmpResponse(response: HttpResponse): Unit = when(TestSubscriptionService.subscriptionETMPConnector.subscribeToEtmp(Matchers.any(), Matchers.any())
+  (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
+
+  def mockGetSubscriptionEtmpResponse(response: HttpResponse): Unit =
+    when(TestSubscriptionService.subscriptionETMPConnector.getSubscription(Matchers.any())
   (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   def mockGgAdminResponse(response: HttpResponse): Unit = when(TestSubscriptionService.ggAdminConnector.addKnownFacts(Matchers.any())(Matchers.any()))
@@ -290,4 +296,48 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
       }
     }
   }
+
+  "Calling SubscribeService.getSubscription" when {
+    "returns successful full ETMP response" should {
+      lazy val result = TestSubscriptionService.getSubscription(dummyValidTavcRegNumber)
+      lazy val response = await(result)
+
+      "return a OK response (200)" in {
+        mockGetSubscriptionEtmpResponse(HttpResponse(OK, Some(GetSubscriptionResponses.getSubFull)))
+        response.status shouldBe OK
+      }
+
+      "return the expected json response containing the returned subscription" in {
+        response.json shouldBe GetSubscriptionResponses.getSubFull
+      }
+    }
+  }
+
+  "Calling SubscribeService.getSubscription" when {
+    "returns successful no address ETMP response" should {
+      lazy val result = TestSubscriptionService.getSubscription(dummyValidTavcRegNumber)
+      lazy val response = await(result)
+
+      "return a OK response (200)" in {
+        mockGetSubscriptionEtmpResponse(HttpResponse(OK, Some(GetSubscriptionResponses.getSubNoAddress)))
+        response.status shouldBe OK
+      }
+      "return the expected json response containing the returned subscription" in {
+        mockGetSubscriptionEtmpResponse(HttpResponse(OK, Some(GetSubscriptionResponses.getSubNoAddress)))
+        response.json shouldBe GetSubscriptionResponses.getSubNoAddress
+      }
+    }
+  }
+
+  "Calling SubscribeService.getSubscription" when {
+    "return a Bad request response" should {
+      lazy val result = TestSubscriptionService.getSubscription(dummyValidTavcRegNumber)
+      lazy val response = await(result)
+      "return a BAD_REQUEST response (400)" in {
+        mockGetSubscriptionEtmpResponse(HttpResponse(BAD_REQUEST))
+        response.status shouldBe BAD_REQUEST
+      }
+    }
+  }
+
 }

@@ -83,6 +83,18 @@ trait SubscriptionController extends BaseController with Authorisation {
     }
   }
 
+  def getSubscription(tavcReferenceNumber: String):Action[AnyContent] = Action.async { implicit request =>
+    authorised {
+      case Authorised => {
+        Logger.info(s"[SubscriptionController][getSubscription]")
+        subscriptionService.getSubscription(tavcReferenceNumber) map { responseReceived =>
+          Status(responseReceived.status)(responseReceived.body)
+        }
+      }
+      case NotAuthorised => Future.successful(Forbidden)
+    }
+  }
+
   /** Randomly generate acknowledgementReference, must be between 1 and 32 characters long**/
   private def generateAcknowledgementRef(safeId: String): String =  {
     val ackRef = safeId concat  (System.currentTimeMillis / 1000).toString

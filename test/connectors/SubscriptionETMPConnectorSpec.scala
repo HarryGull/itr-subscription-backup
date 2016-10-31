@@ -22,6 +22,7 @@ import uk.gov.hmrc.play.test.WithFakeApplication
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import java.util.UUID
 
+import common.GetSubscriptionResponses
 import play.api.test.Helpers._
 import org.mockito.Matchers
 import org.mockito.Mockito._
@@ -31,7 +32,6 @@ import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
@@ -132,6 +132,29 @@ class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with With
         .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE)))
       val result = TestConnector.subscribeToEtmp(dummyValidSafeID, dummySubscriptionRequestNotProcessed)
       await(result).status shouldBe SERVICE_UNAVAILABLE
+    }
+  }
+
+  "Calling subscribeToEtmp with a valid Tavc Ref'" should {
+    "return a NOT_FOUND Error if a NOT_FOUND found returned from DES" in new Setup {
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"),
+        Matchers.any())(Matchers.any(), Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
+      val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
+      await(result).status shouldBe NOT_FOUND
+    }
+  }
+
+  "Calling subscribeToEtmp with a valid Tavc Ref'" should {
+    "return an OK with expected JSON body if a matching records returned from DES" in new Setup {
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"),
+        Matchers.any())(Matchers.any(), Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, Some(GetSubscriptionResponses.getSubFull))))
+      val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
+      val response = await(result)
+      response.status shouldBe OK
+      response.json shouldBe GetSubscriptionResponses.getSubFull
+
     }
   }
 }

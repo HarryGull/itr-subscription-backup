@@ -1,3 +1,4 @@
 # microservice specific routes
 
 POST       /:safeId/:postcode/subscribe       controllers.SubscriptionController.subscribe(safeId: String, postcode: String)
+GET       /:tavcReferenceNumber/subscription       controllers.SubscriptionController.getSubscription(tavcReferenceNumber: String)

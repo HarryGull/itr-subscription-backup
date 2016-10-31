@@ -33,11 +33,19 @@ object SubscriptionETMPConnector extends SubscriptionETMPConnector {
 trait SubscriptionETMPConnector extends ServicesConfig {
 
   def http: HttpGet with HttpPost with HttpPut
+
   val serviceUrl: String
   private lazy val config = ConfigFactory.load()
 
-  def subscribeToEtmp(safeId: String,subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"
-    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest),Seq("Environment" -> config.getString("environment")))
+    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest), Seq("Environment" -> config.getString("environment")))
+  }
+
+  def getSubscription(tavcReferenceNumber: String)
+                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+    val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$tavcReferenceNumber/subscription"
+    http.GET[HttpResponse](requestUrl, Seq("Environment" -> config.getString("environment")))
   }
 }
+///taxpayers/:tavcRefNumber/subscription

@@ -39,6 +39,7 @@ import model.SubscriptionRequest
 import models.ggEnrolment.EnrolRequestModel
 import models.{KnownFact, KnownFactsForService}
 import play.api.http.Status._
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -98,4 +99,9 @@ trait SubscriptionService {
       GovernmentGatewayConstants.tavcFriendlyName,
       List(tavcReference, postCode)
     )
+
+  def getSubscription(tavcReferenceNumber:String)
+              (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+    subscriptionETMPConnector.getSubscription(tavcReferenceNumber)
+  }
 }
