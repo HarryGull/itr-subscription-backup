@@ -22,7 +22,6 @@ import model.SubscriptionRequest
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
-
 import scala.concurrent.{ExecutionContext, Future}
 
 object SubscriptionETMPConnector extends SubscriptionETMPConnector {
@@ -39,13 +38,13 @@ trait SubscriptionETMPConnector extends ServicesConfig {
 
   def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"
-    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest), Seq("Environment" -> config.getString("environment")))
+    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest),Seq("Environment" -> config.getString("environment")))
   }
 
   def getSubscription(tavcReferenceNumber: String)
                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$tavcReferenceNumber/subscription"
-    http.GET[HttpResponse](requestUrl, Seq("Environment" -> config.getString("environment")))
+    http.GET[HttpResponse](requestUrl)(HttpReads.readRaw,hc.withExtraHeaders("Environment" -> config.getString("environment")))
   }
 }
 ///taxpayers/:tavcRefNumber/subscription
