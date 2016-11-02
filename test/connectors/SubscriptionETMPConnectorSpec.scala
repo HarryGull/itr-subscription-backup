@@ -137,8 +137,8 @@ class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with With
 
   "Calling subscribeToEtmp with a valid Tavc Ref'" should {
     "return a NOT_FOUND Error if a NOT_FOUND found returned from DES" in new Setup {
-      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"),
-        Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
+        (Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
       val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
       await(result).status shouldBe NOT_FOUND
@@ -147,8 +147,8 @@ class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with With
 
   "Calling subscribeToEtmp with a valid Tavc Ref'" should {
     "return an OK with expected JSON body if a matching records returned from DES" in new Setup {
-      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"),
-        Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
+        (Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, Some(GetSubscriptionResponses.getSubFull))))
       val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
       val response = await(result)
