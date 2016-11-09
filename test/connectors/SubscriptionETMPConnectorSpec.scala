@@ -41,8 +41,10 @@ class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with With
 
   class Setup {
     object TestConnector extends SubscriptionETMPConnector {
-      val serviceUrl = "dummy"
-      val http = mockHttp
+      override val serviceUrl = "dummy"
+      override val environment = "test"
+      override val token = "test"
+      override val http = mockHttp
     }
   }
 

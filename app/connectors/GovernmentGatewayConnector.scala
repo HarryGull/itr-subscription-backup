@@ -16,13 +16,14 @@
 
 package connectors
 
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import models.ggEnrolment._
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -49,7 +50,7 @@ trait GovernmentGatewayConnector extends ServicesConfig with RawResponseReads {
 }
 
 object GovernmentGatewayConnector extends GovernmentGatewayConnector {
-  val serviceURL = baseUrl("government-gateway")
+  val serviceURL = MicroserviceAppConfig.ggURL
   val enrolURI = "enrol"
   val http = WSHttp
 }
