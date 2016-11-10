@@ -16,12 +16,12 @@
 
 package connectors
 
-import com.typesafe.config.ConfigFactory
 import config.{MicroserviceAppConfig, WSHttp}
 import model.SubscriptionRequest
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, Writes}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
+import uk.gov.hmrc.play.http.logging.Authorization
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,16 +40,17 @@ trait SubscriptionETMPConnector extends ServicesConfig {
   val serviceUrl: String
   val environment: String
   val token: String
-  private lazy val config = ConfigFactory.load()
 
   def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"
-    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest),Seq("Environment" -> environment, "Authorization" -> s"Bearer $token"))
+    val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $token"))).withExtraHeaders("Environment" -> environment)
+    http.POST[JsValue, HttpResponse](requestUrl, Json.toJson(subscribeRequest))(implicitly[Writes[JsValue]],HttpReads.readRaw,desHeaders)
   }
 
   def getSubscription(tavcReferenceNumber: String)
                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$tavcReferenceNumber/subscription"
-    http.GET[HttpResponse](requestUrl)(HttpReads.readRaw,hc.withExtraHeaders("Environment" -> environment, "Authorization" -> s"Bearer $token"))
+    val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $token"))).withExtraHeaders("Environment" -> environment)
+    http.GET[HttpResponse](requestUrl)(HttpReads.readRaw,desHeaders)
   }
 }
