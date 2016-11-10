@@ -16,13 +16,14 @@
 
 package connectors
 
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import play.api.http.Status._
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import auth.Authority
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -63,7 +64,7 @@ trait AuthConnector extends ServicesConfig {
 }
 
 object AuthConnector extends AuthConnector {
-  lazy val serviceUrl = baseUrl("auth")
+  lazy val serviceUrl = MicroserviceAppConfig.authURL
   val authorityUri = "auth/authority"
   val http: HttpGet with HttpPost = WSHttp
 }

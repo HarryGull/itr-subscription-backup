@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import models._
 import play.api.Logger
 import play.api.http.Status._
@@ -53,7 +53,7 @@ trait GovernmentGatewayAdminConnector extends ServicesConfig with RawResponseRea
 }
 
 object GovernmentGatewayAdminConnector extends GovernmentGatewayAdminConnector {
-  val serviceURL = baseUrl("government-gateway-admin")
+  val serviceURL = MicroserviceAppConfig.ggAdminURL
   val addKnownFactsURI = "known-facts"
   val http = WSHttp
 }

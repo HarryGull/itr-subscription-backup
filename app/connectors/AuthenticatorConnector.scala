@@ -16,10 +16,11 @@
 
 package connectors
 
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
+
 import scala.concurrent.Future
 
 trait AuthenticatorConnector extends ServicesConfig with RawResponseReads {
@@ -34,7 +35,7 @@ trait AuthenticatorConnector extends ServicesConfig with RawResponseReads {
 }
 
 object AuthenticatorConnector extends AuthenticatorConnector {
-  val serviceURL = baseUrl("authenticator")
+  val serviceURL = MicroserviceAppConfig.authenticatorURL
   val refreshURI = "authenticator/refresh-profile"
   val http = WSHttp
 }
