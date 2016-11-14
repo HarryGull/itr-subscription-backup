@@ -70,7 +70,7 @@ trait SubscriptionService {
 
   def addKnownFacts(etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     etmpResponse.status match {
-      case CREATED => ggAdminConnector.addKnownFacts(knownFactsBuilder((etmpResponse.json \ etmpReferenceKey).as[String], postCode))
+      case OK => ggAdminConnector.addKnownFacts(knownFactsBuilder((etmpResponse.json \ etmpReferenceKey).as[String], postCode))
       case _ => Future.successful(etmpResponse)
     }
 
