@@ -40,10 +40,6 @@ trait GovernmentGatewayAdminConnector extends ServicesConfig with RawResponseRea
     val baseUrl = s"""$serviceURL/government-gateway-admin/service"""
     val postUrl = s"""$baseUrl/${GovernmentGatewayConstants.tavcServiceNameKey}/$addKnownFactsURI"""
 
-    Logger.info(s"[GovernmentGatewayAdminConnector][addKnownFacts] - jsonData = ${jsonData.toString()}")
-    Logger.info(s"[GovernmentGatewayAdminConnector][addKnownFacts] - baseUrl = $baseUrl")
-    Logger.info(s"[GovernmentGatewayAdminConnector][addKnownFacts] - postUrl = $postUrl")
-
     http.POST[JsValue, HttpResponse](postUrl, jsonData) map {
       response =>
         response.status match {

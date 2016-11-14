@@ -38,8 +38,6 @@ trait GovernmentGatewayConnector extends ServicesConfig with RawResponseReads {
     val jsonData = Json.toJson(enrolRequest)
     val postUrl = s"$serviceURL/$enrolURI"
 
-    Logger.info(s"[GovernmentGatewayConnector][addEnrolment] jsonData = ${jsonData.toString()}")
-
     http.POST[JsValue, HttpResponse](postUrl, jsonData) map {
       response => response.status match {
         case OK => response
