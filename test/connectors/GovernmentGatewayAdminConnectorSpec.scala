@@ -39,7 +39,7 @@ class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar wit
     "called for successful set of known facts" should {
       lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List(
         KnownFact("HMRC-TAVC-ORG", "XXTAVC000123456"),
-        KnownFact("postalCode", "TF3 4ER")
+        KnownFact("postalCode", "AA1 1AA")
       )))
       lazy val response = await(result)
 

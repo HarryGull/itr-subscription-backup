@@ -40,7 +40,7 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
     "Tax Advantaged Venture Capital Schemes Enrolment",
     Seq(
       "XXTAVC000123456",
-      "TF3 4ER"
+      "AA1 1AA"
     )
   )
 
@@ -49,7 +49,7 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
     "Activated",
     List(
       IdentifierModel("tavcRegNumber","XXTAVC000123456"),
-      IdentifierModel("postalCode","TF3 4ER")
+      IdentifierModel("postalCode","AA1 1AA")
     )
   ))
 

@@ -44,12 +44,12 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplicat
   )
 
   val affinityResponse = (key: String) => Json.parse(
-    s"""{"uri":"/auth/oid/57e915480f00000f006d915b","confidenceLevel":50,"credentialStrength":"weak",
-      |"userDetailsLink":"http://localhost:9978/user-details/id/57e915482200005f00b0b55e","legacyOid":"57e915480f00000f006d915b",
-      |"new-session":"/auth/oid/57e915480f00000f006d915b/session","ids":"/auth/oid/57e915480f00000f006d915b/ids",
-      |"credentials":{"gatewayId":"872334723473244"},"accounts":{},"lastUpdated":"2016-09-26T12:32:08.734Z",
-      |"loggedInAt":"2016-09-26T12:32:08.734Z","levelOfAssurance":"1","enrolments":"/auth/oid/57e915480f00000f006d915b/enrolments",
-      |"affinityGroup":"$key","correlationId":"9da194b9490024bae213f18d5b34fedf41f2c3236b434975333a7bdb0fe548ec","credId":"872334723473244"}""".stripMargin
+    s"""{"uri":"/auth/oid/00000000000000000000000","confidenceLevel":50,"credentialStrength":"weak",
+      |"userDetailsLink":"http://localhost:9978/user-details/id/000000000000000000000000","legacyOid":"00000000000000000000000",
+      |"new-session":"/auth/oid/00000000000000000000000/session","ids":"/auth/oid/00000000000000000000000/ids",
+      |"credentials":{"gatewayId":"000000000000000"},"accounts":{},"lastUpdated":"2016-09-26T12:32:08.734Z",
+      |"loggedInAt":"2016-09-26T12:32:08.734Z","levelOfAssurance":"1","enrolments":"/auth/oid/00000000000000000000000/enrolments",
+      |"affinityGroup":"$key","correlationId":"0000000000000000000000000000000000000000000000000000000000000000","credId":"000000000000000"}""".stripMargin
   )
 
   "AuthConnector" should {
