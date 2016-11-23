@@ -42,7 +42,7 @@ trait TestHelper {
   val dummySubscriptionRequestNotProcessed = SubscriptionRequest("notprocessed", dummySubscriptionType)
   val dummyValidSafeID = "XA0001234567890"
   val dummyInvalidSafeID = "YA0001234567890"
-  val dummyValidPostcode = "SY76TA"
+  val dummyValidPostcode = "AA11AA"
   val dummyInvalidPostcode = "INVALID_POSTCODE"
   val dummyValidTavcRegNumber = "XXTAVC000123456"
   val dummyValidProcessingDate = "2016-10-05T09:30:47Z"
@@ -84,8 +84,8 @@ trait TestHelper {
 
   val fullContactNameModel = ContactNameModel("fred", Some("Smith"))
   val fullContactDetalsModel = ContactDetailsModel(Some("000001 00000002"),
-    Some("100000 20000"), Some("300000 400000"), Some("fred@nowhere.com"))
-  val fullContactAddress = ContactAddressModel("Line 1", "Line 2", Some("Line 3"), Some("Line 4"), "GB", Some("AA3 3AA"))
+    Some("100000 20000"), Some("300000 400000"), Some("test@test.com"))
+  val fullContactAddress = ContactAddressModel("Line 1", "Line 2", Some("Line 3"), Some("Line 4"), "GB", Some("AA1 1AA"))
   val fullCorrespondenceDetails =
     CorrespondenceDetailsModel(Some(fullContactNameModel),Some(fullContactDetalsModel), Some(fullContactAddress))
 
