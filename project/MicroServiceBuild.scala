@@ -19,20 +19,20 @@ private object AppDependencies {
   import play.core.PlayVersion
 
   private val microserviceBootstrapVersion = "4.4.0"
-  private val playAuthVersion = "3.3.0"
+  private val playAuthVersion = "3.4.0"
   private val playHealthVersion = "1.1.0"
-  private val playJsonLoggerVersion = "2.1.1"  
-  private val playUrlBindersVersion = "1.0.0"
-  private val playConfigVersion = "2.0.1"
+  private val playJsonLoggerVersion = "2.1.1"
+  private val playUrlBindersVersion = "1.1.0"
+  private val playConfigVersion = "2.1.0"
   private val domainVersion = "3.7.0"
-  private val hmrcTestVersion = "1.6.0"
+  private val hmrcTestVersion = "1.9.0"
   private val playReactivemongoVersion = "4.8.0"
-  //private val metricsPlayVersion = "2.4.0_0.4.1"
+  private val playGraphiteVersion = "2.0.0"
+  private val metricsGraphiteVersion = "3.0.2"
 
   val compile = Seq(
-    "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
-
     ws,
+    "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
     "uk.gov.hmrc" %% "microservice-bootstrap" % microserviceBootstrapVersion,
     "uk.gov.hmrc" %% "play-authorisation" % playAuthVersion,
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
@@ -40,9 +40,8 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
     "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
-   // "com.kenshoo" %% "metrics-play" % metricsPlayVersion,
-    "com.kenshoo" %% "metrics-play" % "2.3.0_0.1.8",
-    "com.codahale.metrics" % "metrics-graphite" % "3.0.2"
+    "uk.gov.hmrc" %% "play-graphite" % playGraphiteVersion,
+    "com.codahale.metrics" % "metrics-graphite" % metricsGraphiteVersion
   )
 
   trait TestDependencies {
