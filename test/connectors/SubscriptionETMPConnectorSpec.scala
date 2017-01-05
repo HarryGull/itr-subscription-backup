@@ -16,9 +16,8 @@
 
 package connectors
 
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import helpers.TestHelper._
-import uk.gov.hmrc.play.test.WithFakeApplication
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import java.util.UUID
 
@@ -27,14 +26,15 @@ import play.api.test.Helpers._
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import play.api.libs.json.{JsValue, Json}
+import org.scalatestplus.play.OneAppPerSuite
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
+class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
 
   val mockHttp : WSHttp = mock[WSHttp]
   val sessionId = UUID.randomUUID.toString
@@ -51,8 +51,20 @@ class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with With
   implicit val hc: HeaderCarrier = HeaderCarrier().withExtraHeaders("Accept" -> "application/vnd.hmrc.1.0+json", "Content-Type" -> "application/json")
 
   "SubscriptionETMPConnector" should {
-    "use the correct http object" in {
+    "use WSHttp" in {
       SubscriptionETMPConnector.http shouldBe WSHttp
+    }
+
+    "Get the serviceUrl from the desURL in config" in {
+      SubscriptionETMPConnector.serviceUrl shouldBe MicroserviceAppConfig.desURL
+    }
+
+    "Get the environemnt from the desEnvironment in config" in {
+      SubscriptionETMPConnector.environment shouldBe MicroserviceAppConfig.desEnvironment
+    }
+
+    "Get the token from the desToken in config" in {
+      SubscriptionETMPConnector.token shouldBe MicroserviceAppConfig.desToken
     }
   }
 

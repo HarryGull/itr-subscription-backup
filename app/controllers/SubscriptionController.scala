@@ -31,8 +31,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object SubscriptionController extends SubscriptionController {
-  val subscriptionService: SubscriptionService = SubscriptionService
-  val auditService = AuditService
+  override val subscriptionService = SubscriptionService
+  override val auditService = AuditService
   override val authConnector = AuthConnector
 }
 

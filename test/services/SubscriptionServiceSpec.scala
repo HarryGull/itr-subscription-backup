@@ -23,18 +23,18 @@ import play.api.libs.json.Json
 import helpers.TestHelper._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mock.MockitoSugar
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.test.UnitSpec
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.http.logging.SessionId
 import play.api.test.Helpers._
-import org.scalatest
+import org.scalatestplus.play.OneAppPerSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with BeforeAndAfterEach with WithFakeApplication  {
+class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with BeforeAndAfterEach with OneAppPerSuite {
 
   object TestSubscriptionService extends SubscriptionService {
     override val subscriptionETMPConnector: SubscriptionETMPConnector = mock[SubscriptionETMPConnector]
@@ -62,7 +62,7 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeReques
     when(TestSubscriptionService.authenticatorConnector.refreshProfile(Matchers.any())).thenReturn(Future.successful(response))
 
 
-  "The submission service" should {
+  "SubscriptionService" should {
     "use the correct ETMP connector" in {
       SubscriptionService.subscriptionETMPConnector shouldBe SubscriptionETMPConnector
     }

@@ -15,19 +15,19 @@ object MicroServiceBuild extends Build with MicroService {
 }
 
 private object AppDependencies {
-  import play.PlayImport._
+  import play.sbt.PlayImport._
   import play.core.PlayVersion
 
-  private val microserviceBootstrapVersion = "4.4.0"
-  private val playAuthVersion = "3.4.0"
-  private val playHealthVersion = "1.1.0"
-  private val playJsonLoggerVersion = "2.1.1"
-  private val playUrlBindersVersion = "1.1.0"
-  private val playConfigVersion = "2.1.0"
-  private val domainVersion = "3.7.0"
-  private val hmrcTestVersion = "1.9.0"
-  private val playReactivemongoVersion = "4.8.0"
-  private val playGraphiteVersion = "2.0.0"
+  private val microserviceBootstrapVersion = "5.8.0"
+  private val playAuthVersion = "4.2.0"
+  private val playHealthVersion = "2.0.0"
+  private val playJsonLoggerVersion = "3.1.0"
+  private val playUrlBindersVersion = "2.0.0"
+  private val playConfigVersion = "3.0.0"
+  private val domainVersion = "4.0.0"
+  private val hmrcTestVersion = "2.2.0"
+  private val playReactivemongoVersion = "5.1.0"
+  private val playGraphiteVersion = "3.1.0"
   private val metricsGraphiteVersion = "3.0.2"
 
   val compile = Seq(
@@ -38,10 +38,9 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
     "uk.gov.hmrc" %% "play-url-binders" % playUrlBindersVersion,
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
-    "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
+    "uk.gov.hmrc" %% "logback-json-logger" % playJsonLoggerVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
-    "uk.gov.hmrc" %% "play-graphite" % playGraphiteVersion,
-    "com.codahale.metrics" % "metrics-graphite" % metricsGraphiteVersion
+    "uk.gov.hmrc" %% "play-graphite" % playGraphiteVersion
   )
 
   trait TestDependencies {
@@ -54,8 +53,10 @@ private object AppDependencies {
       override lazy val test = Seq(
         "uk.gov.hmrc" %% "hmrctest" % hmrcTestVersion % scope,
         "org.scalatest" %% "scalatest" % "2.2.6" % scope,
-        "org.pegdown" % "pegdown" % "1.5.0" % scope,
-        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+        "org.pegdown" % "pegdown" % "1.6.0" % scope,
+        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+        "org.mockito" % "mockito-all" % "1.9.5" % scope,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.0" % scope
       )
     }.test
   }
@@ -68,8 +69,10 @@ private object AppDependencies {
       override lazy val test = Seq(
         "uk.gov.hmrc" %% "hmrctest" % hmrcTestVersion % scope,
         "org.scalatest" %% "scalatest" % "2.2.6" % scope,
-        "org.pegdown" % "pegdown" % "1.5.0" % scope,
-        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+        "org.pegdown" % "pegdown" % "1.6.0" % scope,
+        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+        "org.mockito" % "mockito-all" % "1.9.5" % scope,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.0" % scope
       )
     }.test
   }

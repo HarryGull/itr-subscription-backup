@@ -17,18 +17,17 @@
 package connectors
 
 import auth.Authority
-import config.WSHttp
+import config.{MicroserviceAppConfig, WSHttp}
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
-import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
 import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.test.UnitSpec
 import helpers.AuthHelper._
-import uk.gov.hmrc.play.config.ServicesConfig
+import org.scalatestplus.play.OneAppPerSuite
 
-class AuthConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication with ServicesConfig {
+class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
 
   object TestAuthConnector extends AuthConnector {
     override def serviceUrl: String = "localhost"
@@ -56,8 +55,8 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplicat
     "Use WSHttp" in {
       AuthConnector.http shouldBe WSHttp
     }
-    "Get the serviceUrl from the base url of auth in config" in {
-      AuthConnector.serviceUrl shouldBe baseUrl("auth")
+    "Get the serviceUrl from the authURL in config" in {
+      AuthConnector.serviceUrl shouldBe MicroserviceAppConfig.authURL
     }
   }
 

@@ -30,7 +30,7 @@ import org.mockito.Mockito._
 
 import scala.concurrent.Future
 
-class AuthorisationSpec extends FakeApplication with UnitSpec with BeforeAndAfter {
+class AuthorisationSpec extends UnitSpec with BeforeAndAfter {
 
   object TestAuthorisation extends Authorisation {
     override val authConnector: AuthConnector = mockAuthConnector
