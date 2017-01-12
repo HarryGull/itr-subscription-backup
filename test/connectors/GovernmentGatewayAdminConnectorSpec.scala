@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package connectors
 
+import com.kenshoo.play.metrics.PlayModule
+import config.{MicroserviceAppConfig, WSHttp}
 import helpers.FakeRequestHelper
 import org.scalatest.mock.MockitoSugar
 import play.api.test.FakeApplication
@@ -25,13 +27,23 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import helpers.GovernmentGatewayHelper._
 import models.{KnownFact, KnownFactsForService}
+import org.scalatestplus.play.OneAppPerSuite
 
-class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with WithFakeApplication {
+class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite {
 
   object TestGGAdminConnector extends GovernmentGatewayAdminConnector {
     override val serviceURL = "government-gateway-admin"
     override val addKnownFactsURI = "known-facts"
     override val http: HttpGet with HttpPost = mockWSHttp
+  }
+
+  "GovernmentGatewayAdminConnector" should {
+    "Use WSHttp" in {
+      GovernmentGatewayAdminConnector.http shouldBe WSHttp
+    }
+    "Get the serviceUrl from the ggAdminURL in config" in {
+      GovernmentGatewayAdminConnector.serviceURL shouldBe MicroserviceAppConfig.ggAdminURL
+    }
   }
 
   "GovernmentGatewayAdminConnector" when {

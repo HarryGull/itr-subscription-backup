@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package connectors
 
+import config.{MicroserviceAppConfig, WSHttp}
 import helpers.FakeRequestHelper
 import helpers.GovernmentGatewayHelper._
 import models.ggEnrolment.{EnrolRequestModel, EnrolResponseModel, IdentifierModel}
 import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.Json
-import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.test.UnitSpec
 
-class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with WithFakeApplication {
+class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite {
 
   object TestGGConnector extends GovernmentGatewayConnector {
     override val serviceURL = "government-gateway"
@@ -55,6 +56,14 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
 
   val errorResponse = Json.parse( """{ "Message": "An error occured" }""")
 
+  "GovernmentGatewayConnector" should {
+    "Use WSHttp" in {
+      GovernmentGatewayConnector.http shouldBe WSHttp
+    }
+    "Get the serviceUrl from the ggURL in config" in {
+      GovernmentGatewayConnector.serviceURL shouldBe MicroserviceAppConfig.ggURL
+    }
+  }
 
   "GovernmentGatewayConnector" when {
 

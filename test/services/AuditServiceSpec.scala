@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,9 @@ package services
 import common.{AuditConstants, ResponseConstants}
 import helpers.{EtmpResponseReasons, TestHelper}
 import model.SubscriptionType
-import org.mockito.{ArgumentCaptor, Matchers}
-import org.mockito.Matchers.{eq => eqTo}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.http.logging.SessionId
-import uk.gov.hmrc.play.test.WithFakeApplication
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
@@ -33,8 +30,9 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 import metrics.{Metrics, MetricsEnum}
 import org.scalatest.BeforeAndAfter
+import org.scalatestplus.play.OneAppPerSuite
 
-class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with WithFakeApplication with BeforeAndAfter with TestHelper {
+class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneAppPerSuite with BeforeAndAfter with TestHelper {
 
   val auditMock = mock[Audit]
   val metricsMock = mock[Metrics]
@@ -71,6 +69,14 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with With
 
   before {
     reset(metricsMock)
+  }
+
+  "AuditService" should {
+
+    "use the Metrics object for metrics" in {
+      AuditService.metrics shouldBe Metrics
+    }
+
   }
 
   "Calling AuditService.sendTAVCSubscriptionEvent and status OK" when {

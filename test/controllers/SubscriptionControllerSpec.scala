@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,16 @@ import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import org.scalatest.mock.MockitoSugar
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.test.UnitSpec
 import org.scalatest.BeforeAndAfter
+import org.scalatestplus.play.OneAppPerSuite
 import services.{AuditService, SubscriptionService}
 
 import scala.concurrent.Future
 
-class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfter with TestHelper{
+class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with BeforeAndAfter with TestHelper{
 
   val mockSubscriptionService = mock[SubscriptionService]
-
 
   val subscriptionResponse = SubscriptionResponse("FBUND09889765", "Subscription Request Successful")
 

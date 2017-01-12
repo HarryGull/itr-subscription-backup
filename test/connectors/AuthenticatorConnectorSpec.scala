@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package connectors
 
+import config.{MicroserviceAppConfig, WSHttp}
 import org.scalatest.mock.MockitoSugar
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
@@ -24,11 +25,12 @@ import org.mockito.Matchers
 import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 import helpers.AuthHelper._
+import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.play.http.ws.{WSGet, WSPost}
 
 import scala.concurrent.Future
 
-class AuthenticatorConnectorSpec extends FakeApplication with UnitSpec with MockitoSugar {
+class AuthenticatorConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
 
   class MockHttp extends WSGet with WSPost {
     override val hooks = NoneRequired
@@ -45,6 +47,15 @@ class AuthenticatorConnectorSpec extends FakeApplication with UnitSpec with Mock
     when(TestAuthenticatorConnector.http.POSTEmpty[HttpResponse]
       (Matchers.eq(s"${TestAuthenticatorConnector.serviceURL}/${TestAuthenticatorConnector.refreshURI}"))
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
+
+  "AuthenticatorConnector" should {
+    "Use WSHttp" in {
+      AuthenticatorConnector.http shouldBe WSHttp
+    }
+    "Get the serviceUrl from the authenticatorURL in config" in {
+      AuthenticatorConnector.serviceURL shouldBe MicroserviceAppConfig.authenticatorURL
+    }
+  }
 
   "AuthenticatorConnector.refreshProfile" should {
     "return Status NO_CONTENT (204) when successful response received" in {
