@@ -16,58 +16,42 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import helpers.AuthHelper
 import org.scalatest.mock.MockitoSugar
-import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import org.mockito.Mockito._
 import org.mockito.Matchers
 import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
-import helpers.AuthHelper._
 import org.scalatestplus.play.OneAppPerSuite
-import uk.gov.hmrc.play.http.ws.{WSGet, WSPost}
 
 import scala.concurrent.Future
 
-class AuthenticatorConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
+class AuthenticatorConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
 
-  class MockHttp extends WSGet with WSPost {
-    override val hooks = NoneRequired
-  }
-  val mockWSHttp = mock[MockHttp]
-
-  object TestAuthenticatorConnector extends AuthenticatorConnector {
-    override val serviceURL = "localhost"
-    override val refreshURI = "authenticator/refresh-profile"
-    override val http = mockWSHttp
-  }
+  val testConnector = new AuthenticatorConnectorImpl(mockHttp, testAppConfig)
 
   def setupMock(response: HttpResponse): Unit =
-    when(TestAuthenticatorConnector.http.POSTEmpty[HttpResponse]
-      (Matchers.eq(s"${TestAuthenticatorConnector.serviceURL}/${TestAuthenticatorConnector.refreshURI}"))
+    when(mockHttp.POSTEmpty[HttpResponse](Matchers.eq(s"${testConnector.serviceURL}/${testConnector.refreshURI}"))
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   "AuthenticatorConnector" should {
-    "Use WSHttp" in {
-      AuthenticatorConnector.http shouldBe WSHttp
-    }
     "Get the serviceUrl from the authenticatorURL in config" in {
-      AuthenticatorConnector.serviceURL shouldBe MicroserviceAppConfig.authenticatorURL
+      testConnector.serviceURL shouldBe testAppConfig.authenticatorURL
     }
   }
 
   "AuthenticatorConnector.refreshProfile" should {
     "return Status NO_CONTENT (204) when successful response received" in {
       setupMock(HttpResponse(NO_CONTENT))
-      val result = TestAuthenticatorConnector.refreshProfile
+      val result = testConnector.refreshProfile
       val response = await(result)
       response.status shouldBe NO_CONTENT
     }
 
     "propogate response when a status other than NO_CONTENT (204) is returned" in {
       setupMock(HttpResponse(BAD_REQUEST))
-      val result = TestAuthenticatorConnector.refreshProfile
+      val result = testConnector.refreshProfile
       val response = await(result)
       response.status shouldBe BAD_REQUEST
     }

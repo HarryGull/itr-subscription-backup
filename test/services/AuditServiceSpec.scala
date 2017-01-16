@@ -17,6 +17,7 @@
 package services
 
 import common.{AuditConstants, ResponseConstants}
+import connectors.AuditConnector
 import helpers.{EtmpResponseReasons, TestHelper}
 import model.SubscriptionType
 import org.mockito.Mockito._
@@ -36,32 +37,32 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
 
   val auditMock = mock[Audit]
   val metricsMock = mock[Metrics]
+  val mockAuditConnector = mock[AuditConnector]
   val auditMockResponse = mock[(DataEvent) => Unit]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testID")))
   implicit val rh: RequestHeader = FakeRequest("GET", testRequestPath)
 
 
-  object TestAuditService extends AuditService with AppName {
+  lazy val testAuditService = new AuditServiceImpl(metricsMock, mockAuditConnector) {
     override val audit = auditMock
     override val metrics = metricsMock
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val rh: RequestHeader = FakeRequest("GET", testRequestPath)
-
     when(auditMock.sendDataEvent).thenReturn(auditMockResponse)
   }
 
-  object TestAuditServiceWithCustomLogFormat extends AuditService with AppName {
+  lazy val testAuditServiceWithCustomLogFormat = new AuditServiceImpl(metricsMock, mockAuditConnector) {
     override val audit = auditMock
     override val metrics = metricsMock
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val rh: RequestHeader = FakeRequest("GET", testRequestPath)
 
     // override the logging message format to customise and test it
-    override val logMessageFormat = (controller: String, controllerAction: String, dayOfWeek: String, statusCode: String, eventMessage: String) =>
-      s"Subscribe Audit event recored on $dayOfWeek for [${controller + "/" + controllerAction}]. StatusCode was: [$statusCode]. Event Status is: $eventMessage"
+    override val logMessageFormat = (controller: String, controllerAction: String, dayOfWeek: String, statusCode: String, eventMessage: String) => 
+      s"Subscribe Audit event recorded on $dayOfWeek for [${controller + "/" + controllerAction}]. StatusCode was: [$statusCode]. Event Status is: $eventMessage"
 
     val expectedCustomLogFormatSuccessMessageFriday10Count =
-      "Subscribe Audit event recored on Friday for [SubmissionController/subscribe]. StatusCode was: [200]. Event Status is: Success"
+      "Subscribe Audit event recorded on Friday for [SubmissionController/subscribe]. StatusCode was: [200]. Event Status is: Success"
     //Subscribe Audit event recorded on Friday for [SubmissionController/subscribe]. StatusCode was: [200]. Event Count is: Success
 
     when(auditMock.sendDataEvent).thenReturn(auditMockResponse)
@@ -71,18 +72,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
     reset(metricsMock)
   }
 
-  "AuditService" should {
-
-    "use the Metrics object for metrics" in {
-      AuditService.metrics shouldBe Metrics
-    }
-
-  }
-
   "Calling AuditService.sendTAVCSubscriptionEvent and status OK" when {
     "the request body SubscriptionType is fully populated" should {
       "perform the underlying TXM explicit audit with the actualDataEvent populated as expected" in {
-        TestAuditService.sendTAVCSubscriptionEvent(SubscriptionType(fullCorrespondenceDetails), safeId,
+        testAuditService.sendTAVCSubscriptionEvent(SubscriptionType(fullCorrespondenceDetails), safeId,
           responseNonContent, acknowledgementReference)
 
         verify(auditMockResponse, atLeastOnce()).apply(eventCaptor.capture())
@@ -113,7 +106,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.sendTAVCSubscriptionEvent and status OK" when {
     "the request body SubscriptionType has no models present" should {
       "perform the underlying TXM explicit audit with the actualDataEvent populated as expected" in {
-        TestAuditService.sendTAVCSubscriptionEvent(SubscriptionType(noCorrespondenceModels), safeId,
+        testAuditService.sendTAVCSubscriptionEvent(SubscriptionType(noCorrespondenceModels), safeId,
           responseOkSuccess, acknowledgementReference)
 
         verify(auditMockResponse, atLeastOnce()).apply(eventCaptor.capture())
@@ -144,7 +137,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.sendTAVCSubscriptionEvent and status OK" when {
     "the request body SubscriptionType has all models present with any optionals values not populated" should {
       "perform the underlying TXM explicit audit with the actualDataEvent populated as expected" in {
-        TestAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
+        testAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
           responseOkSuccess, acknowledgementReference)
 
         verify(auditMockResponse, atLeastOnce()).apply(eventCaptor.capture())
@@ -175,7 +168,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.sendTAVCSubscriptionEvent with status Bad Request" when {
     "the response body has no etmp failure reason" should {
       "perform the underlying TXM audit with the actualDataEvent and failure reason populated with default failure reason as expected" in {
-        TestAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
+        testAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
           responseBadRequestNoContent, acknowledgementReference)
 
         verify(auditMockResponse, atLeastOnce()).apply(eventCaptor.capture())
@@ -207,7 +200,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.sendTAVCSubscriptionEvent with status Bad Request" when {
     "the response body has the etmp bad request duplicate failure reason" should {
       "perform the underlying TXM explicit audit with the actualDataEvent and failure reason populated as expected" in {
-        TestAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
+        testAuditService.sendTAVCSubscriptionEvent(SubscriptionType(minCorrespondenceDetails), safeId,
           responseBadRequestEtmpDuplicate, acknowledgementReference)
 
         verify(auditMockResponse, atLeastOnce()).apply(eventCaptor.capture())
@@ -239,10 +232,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is Ok with no content" should {
       "log the expected message and call the incrementSuccessCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseOkNocontent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseOkNocontent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.success
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseOkNocontent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementSuccessCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -250,17 +243,17 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
     }
   }
 
-  "Calling TestAuditServiceWithCustomLogFormat.logSubscriptionResponse " when {
+  "Calling testAuditServiceWithCustomLogFormat.logSubscriptionResponse " when {
     "the status is Ok with no content" should {
       "log the expected message in the overriden custom format and call the incrementSuccessCounter metric" in {
-        val loggedMessage = TestAuditServiceWithCustomLogFormat.logSubscriptionResponse(responseOkNocontent,
+        val loggedMessage = testAuditServiceWithCustomLogFormat.logSubscriptionResponse(responseOkNocontent,
           submissionControllerTestName, subscribeTestAction, "Friday")
 
         val expectedReason = ResponseConstants.success
-        loggedMessage shouldBe TestAuditServiceWithCustomLogFormat.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditServiceWithCustomLogFormat.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, "Friday", responseOkNocontent.status.toString, "Success")
 
-        loggedMessage shouldBe TestAuditServiceWithCustomLogFormat.expectedCustomLogFormatSuccessMessageFriday10Count
+        loggedMessage shouldBe testAuditServiceWithCustomLogFormat.expectedCustomLogFormatSuccessMessageFriday10Count
         verify(metricsMock, times(1)).incrementSuccessCounter(MetricsEnum.TAVC_SUBSCRIPTION)
       }
     }
@@ -269,10 +262,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is Created with no content" should {
       "log the expected message and call the incrementSuccessCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseCreatedNocontent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseCreatedNocontent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.success
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseCreatedNocontent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementSuccessCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -283,10 +276,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is OK with no content" should {
       "log the expected message and call the incrementSuccessCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseNonContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseNonContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.success
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseNonContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementSuccessCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -297,10 +290,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is OK with Etmp response message" should {
       "log the expected message and call the incrementSuccessCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseOkSuccess,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseOkSuccess,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.success
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseOkSuccess.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementSuccessCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -311,10 +304,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is bad request with no content" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseBadRequestNoContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseBadRequestNoContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.defaultBadRequest
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseBadRequestNoContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -325,10 +318,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is bad request with Etmp response content duplicate" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseBadRequestEtmpDuplicate,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseBadRequestEtmpDuplicate,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = EtmpResponseReasons.duplicateSubmission400
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseBadRequestEtmpDuplicate.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -339,10 +332,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is not found with no content" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseNotFoundNoContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseNotFoundNoContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.defaultNotFound
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseNotFoundNoContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -353,10 +346,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is server unavailable with no content" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseServiceUnavailableNoContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseServiceUnavailableNoContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.defaultServiceUnavailable
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseServiceUnavailableNoContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -367,10 +360,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is server unavailable with Etmp response not processed" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseServiceUnavailableEtmpNotProcessed,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseServiceUnavailableEtmpNotProcessed,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = EtmpResponseReasons.notProcessed503
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseServiceUnavailableEtmpNotProcessed.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -382,10 +375,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is internal server error with no content" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseInternalServerErrorNoContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseInternalServerErrorNoContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.defaultInternalServerError
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseInternalServerErrorNoContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -396,10 +389,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is internal server error with Etmp sap error response" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseInternalServerErrorEtmpSap,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseInternalServerErrorEtmpSap,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = EtmpResponseReasons.sapError500
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseInternalServerErrorEtmpSap.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -410,10 +403,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscription" when {
     "the status is internal server error with Etmp response" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseInternalServerErrorEtmp,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseInternalServerErrorEtmp,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = EtmpResponseReasons.serverError500
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseInternalServerErrorEtmp.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -424,10 +417,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscription" when {
     "the status is internal server error with Etmp no regime" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseInternalServerErrorEtmpRegime,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseInternalServerErrorEtmpRegime,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = EtmpResponseReasons.noRegime500
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseInternalServerErrorEtmpRegime.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)
@@ -439,10 +432,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   "Calling AuditService.logSubscriptionResponse " when {
     "the status is other error with success content" should {
       "log the expected message and call the incrementFailedCounter metric" in {
-        val loggedMessage = TestAuditService.logSubscriptionResponse(responseOtherErrorNoContent,
+        val loggedMessage = testAuditService.logSubscriptionResponse(responseOtherErrorNoContent,
           submissionControllerTestName, subscribeTestAction, safeId)
         val expectedReason = ResponseConstants.defaultOther
-        loggedMessage shouldBe TestAuditService.logMessageFormat(submissionControllerTestName,
+        loggedMessage shouldBe testAuditService.logMessageFormat(submissionControllerTestName,
           subscribeTestAction, safeId, responseOtherErrorNoContent.status.toString, expectedReason)
 
         verify(metricsMock, times(1)).incrementFailedCounter(MetricsEnum.TAVC_SUBSCRIPTION)

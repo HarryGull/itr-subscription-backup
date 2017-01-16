@@ -16,27 +16,23 @@
 
 package auth
 
-import connectors.AuthConnector
-import helpers.AuthHelper.Authorities._
-import helpers.AuthHelper._
+import helpers.AuthHelper
 import org.scalatest.BeforeAndAfter
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.UnitSpec
 import org.mockito.Mockito._
 
-
 import scala.concurrent.Future
 
-class AuthorisationSpec extends UnitSpec with BeforeAndAfter {
+class AuthorisationSpec extends UnitSpec with BeforeAndAfter with AuthHelper {
 
-  object TestAuthorisation extends Authorisation {
-    override val authConnector: AuthConnector = mockAuthConnector
+  val testAuthorisation = new Authorisation {
+    override val authConnector = mockAuthConnector
   }
 
-  def authorised(): Future[Result] = TestAuthorisation.authorised {
+  def authorised(): Future[Result] = testAuthorisation.authorised {
     case Authorised => Future.successful(Ok)
     case NotAuthorised => Future.successful(Forbidden)
   }
@@ -54,110 +50,110 @@ class AuthorisationSpec extends UnitSpec with BeforeAndAfter {
     }
 
     "Return a FORBIDDEN result when the user has Confidence Level L0 and is an Organisation" in {
-      setUp(userCL0, Some("Organisation"))
+      setUp(Authorities.userCL0, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return a FORBIDDEN result when the user has Confidence Level L0 and is an Agent" in {
-      setUp(userCL0, Some("Agent"))
+      setUp(Authorities.userCL0, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return a FORBIDDEN result when the user has Confidence Level L0 and there is no Affinity group" in {
-      setUp(userCL0, None)
+      setUp(Authorities.userCL0, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L50 and is an Organisation" in {
-      setUp(userCL50, Some("Organisation"))
+      setUp(Authorities.userCL50, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe OK
     }
 
     "Return an OK result when the user has a low Confidence Level L50 and is an Agent" in {
-      setUp(userCL50, Some("Agent"))
+      setUp(Authorities.userCL50, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L50 and there is no Affinity group" in {
-      setUp(userCL50, None)
+      setUp(Authorities.userCL50, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L100 and is an Organisation" in {
-      setUp(userCL100, Some("Organisation"))
+      setUp(Authorities.userCL100, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe OK
     }
 
     "Return an OK result when the user has a low Confidence Level L100 and is an Agent" in {
-      setUp(userCL100, Some("Agent"))
+      setUp(Authorities.userCL100, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L100 and there is no Affinity group" in {
-      setUp(userCL100, None)
+      setUp(Authorities.userCL100, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L200 and is an Organisation" in {
-      setUp(userCL200, Some("Organisation"))
+      setUp(Authorities.userCL200, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe OK
     }
 
     "Return an OK result when the user has a low Confidence Level L200 and is an Agent" in {
-      setUp(userCL200, Some("Agent"))
+      setUp(Authorities.userCL200, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L200 and there is no Affinity group" in {
-      setUp(userCL200, None)
+      setUp(Authorities.userCL200, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L300 and is an Organisation" in {
-      setUp(userCL300, Some("Organisation"))
+      setUp(Authorities.userCL300, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe OK
     }
 
     "Return an OK result when the user has a low Confidence Level L300 and is an Agent" in {
-      setUp(userCL300, Some("Agent"))
+      setUp(Authorities.userCL300, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L300 and there is no Affinity group" in {
-      setUp(userCL300, None)
+      setUp(Authorities.userCL300, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }
 
     "Return an OK result when the user has a low Confidence Level L500 and is an Organisation" in {
-      setUp(userCL500, Some("Organisation"))
+      setUp(Authorities.userCL500, AffinityGroups.organisation)
       val result = authorised()
       status(result) shouldBe OK
     }
 
     "Return an OK result when the user has a low Confidence Level L500 and is an Agent" in {
-      setUp(userCL500, Some("Agent"))
+      setUp(Authorities.userCL500, AffinityGroups.agent)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
 
     }
 
     "Return an OK result when the user has a low Confidence Level L500 and there is no Affinity group" in {
-      setUp(userCL500, None)
+      setUp(Authorities.userCL500, None)
       val result = authorised()
       status(result) shouldBe FORBIDDEN
     }

@@ -16,40 +16,37 @@
 
 package connectors
 
-import com.kenshoo.play.metrics.PlayModule
-import config.{MicroserviceAppConfig, WSHttp}
-import helpers.FakeRequestHelper
+import helpers.{AuthHelper, FakeRequestHelper}
 import org.scalatest.mock.MockitoSugar
-import play.api.test.FakeApplication
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.play.http.HttpResponse
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import helpers.GovernmentGatewayHelper._
+import uk.gov.hmrc.play.test.UnitSpec
 import models.{KnownFact, KnownFactsForService}
+import org.mockito.Matchers
+import org.mockito.Mockito._
 import org.scalatestplus.play.OneAppPerSuite
 
-class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite {
+import scala.concurrent.Future
 
-  object TestGGAdminConnector extends GovernmentGatewayAdminConnector {
-    override val serviceURL = "government-gateway-admin"
-    override val addKnownFactsURI = "known-facts"
-    override val http: HttpGet with HttpPost = mockWSHttp
-  }
+class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite with AuthHelper {
+
+  val testConnector = new GovernmentGatewayAdminConnectorImpl(mockHttp, testAppConfig)
+
+  def mockGatewayResponse(response: HttpResponse): Unit =
+    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).
+      thenReturn(Future.successful(response))
 
   "GovernmentGatewayAdminConnector" should {
-    "Use WSHttp" in {
-      GovernmentGatewayAdminConnector.http shouldBe WSHttp
-    }
     "Get the serviceUrl from the ggAdminURL in config" in {
-      GovernmentGatewayAdminConnector.serviceURL shouldBe MicroserviceAppConfig.ggAdminURL
+      testConnector.serviceURL shouldBe testAppConfig.ggAdminURL
     }
   }
 
   "GovernmentGatewayAdminConnector" when {
 
     "called for successful set of known facts" should {
-      lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List(
+      lazy val result = testConnector.addKnownFacts(KnownFactsForService(List(
         KnownFact("HMRC-TAVC-ORG", "XXTAVC000123456"),
         KnownFact("postalCode", "AA1 1AA")
       )))
@@ -64,7 +61,7 @@ class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar wit
     "called for unsuccessful set of known facts" should {
 
       val unsuccessfulSubscribeJson = Json.parse( """{ "Message": "An error occured" }""")
-      lazy val result = TestGGAdminConnector.addKnownFacts(KnownFactsForService(List()))
+      lazy val result = testConnector.addKnownFacts(KnownFactsForService(List()))
       lazy val response = await(result)
 
       "return status BAD_REQUEST (400)" in {
