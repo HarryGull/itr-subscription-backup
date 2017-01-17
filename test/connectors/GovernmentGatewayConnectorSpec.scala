@@ -16,24 +16,22 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
-import helpers.FakeRequestHelper
-import helpers.GovernmentGatewayHelper._
+import helpers.{AuthHelper, FakeRequestHelper}
 import models.ggEnrolment.{EnrolRequestModel, EnrolResponseModel, IdentifierModel}
+import org.mockito.Matchers
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
+import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 
-class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite {
+import scala.concurrent.Future
 
-  object TestGGConnector extends GovernmentGatewayConnector {
-    override val serviceURL = "government-gateway"
-    override val enrolURI = "enrol"
-    override val http: HttpGet with HttpPost = mockWSHttp
-  }
+class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite with AuthHelper {
+
+  val testConnector = new GovernmentGatewayConnectorImpl(mockHttp, testAppConfig)
 
   val enrolmentRequest = EnrolRequestModel(
     "Default",
@@ -56,19 +54,20 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
 
   val errorResponse = Json.parse( """{ "Message": "An error occured" }""")
 
+  def mockGatewayResponse(response: HttpResponse): Unit =
+    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).
+      thenReturn(Future.successful(response))
+
   "GovernmentGatewayConnector" should {
-    "Use WSHttp" in {
-      GovernmentGatewayConnector.http shouldBe WSHttp
-    }
     "Get the serviceUrl from the ggURL in config" in {
-      GovernmentGatewayConnector.serviceURL shouldBe MicroserviceAppConfig.ggURL
+      testConnector.serviceURL shouldBe testAppConfig.ggURL
     }
   }
 
   "GovernmentGatewayConnector" when {
 
     "called and a successful response is expected" should {
-      lazy val result = TestGGConnector.addEnrolment(enrolmentRequest)
+      lazy val result = testConnector.addEnrolment(enrolmentRequest)
       lazy val response = await(result)
 
       "return status OK (200)" in {
@@ -82,7 +81,7 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
     }
 
     "called and an unsuccessful response is expected" should {
-      lazy val result = TestGGConnector.addEnrolment(enrolmentRequest)
+      lazy val result = testConnector.addEnrolment(enrolmentRequest)
       lazy val response = await(result)
 
       "return status BAD_REQUEST (400)" in {

@@ -16,8 +16,8 @@
 
 package config
 
-import connectors.SubscriptionETMPConnector._
-import play.api.Play.{configuration, current}
+import com.google.inject.{Inject, Singleton}
+import play.api.Configuration
 import uk.gov.hmrc.play.config.ServicesConfig
 
 trait AppConfig {
@@ -30,7 +30,8 @@ trait AppConfig {
   val desToken: String
 }
 
-object MicroserviceAppConfig extends AppConfig with ServicesConfig {
+@Singleton
+class MicroserviceAppConfig @Inject()(configuration: Configuration) extends AppConfig with ServicesConfig {
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
   override lazy val authURL = baseUrl("auth")

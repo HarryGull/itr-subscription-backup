@@ -16,33 +16,25 @@
 
 package services
 
+import com.google.inject.Inject
 import common.{AuditConstants, ResponseConstants}
-import config.MicroserviceAuditConnector
+import connectors.AuditConnector
 import model.SubscriptionType
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent, EventTypes}
+import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.play.config.AppName
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import play.api.http.Status
 import play.api.Logger
 import metrics.{Metrics, MetricsEnum}
-import play.api.libs.json.{JsValue, Json}
 
 import scala.util.{Failure, Success, Try}
 
-object AuditService extends AuditService with AppName {
-  val audit = new Audit(appName, MicroserviceAuditConnector)
-  val metrics = Metrics
-  //override val logMessageFormat = (controller:String, controllerAction:String, safeId:String,  statusCode:String, message:String) =>
-    //s"[$controller] [$controllerAction] [$safeId] [$statusCode] - $message"
-}
-
-trait AuditService {
+class AuditServiceImpl @Inject()(override val metrics: Metrics, auditConnector: AuditConnector) extends AuditService with AppName {
   this: AppName =>
 
-  val audit: Audit
-  val metrics: Metrics
+  val audit = new Audit(appName, auditConnector)
   val logMessageFormat = (controller:String, controllerAction:String, safeId:String,  statusCode:String, message:String) =>
     s"[$controller] [$controllerAction] [$safeId] [$statusCode] - $message"
 
@@ -128,4 +120,11 @@ trait AuditService {
     }
   }
 
+}
+
+trait AuditService {
+  val metrics: Metrics
+  def sendTAVCSubscriptionEvent(subscriptionType: SubscriptionType, safeId: String, responseReceived: HttpResponse, acknowledgementRef: String)
+                               (implicit hc: HeaderCarrier, rh: RequestHeader): Unit
+  def logSubscriptionResponse(responseReceived: HttpResponse, controller: String, controllerAction: String, safeId: String): String
 }

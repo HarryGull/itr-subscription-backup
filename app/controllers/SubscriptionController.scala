@@ -17,6 +17,7 @@
 package controllers
 
 import auth.{Authorisation, Authorised, NotAuthorised}
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import connectors.AuthConnector
 import metrics.MetricsEnum
@@ -30,16 +31,10 @@ import scala.math.min
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object SubscriptionController extends SubscriptionController {
-  override val subscriptionService = SubscriptionService
-  override val auditService = AuditService
-  override val authConnector = AuthConnector
-}
-
-trait SubscriptionController extends BaseController with Authorisation {
-
-  val subscriptionService: SubscriptionService
-  val auditService : AuditService
+@Singleton
+class SubscriptionController @Inject()(subscriptionService: SubscriptionService,
+                                       auditService: AuditService,
+                                       override val authConnector: AuthConnector) extends BaseController with Authorisation {
 
   val subscribe = (safeId: String, postcode: String) => Action.async(BodyParsers.parse.json) { implicit request =>
     authorised {
@@ -50,7 +45,7 @@ trait SubscriptionController extends BaseController with Authorisation {
           errors => Future.successful(BadRequest(Json.toJson(Error(message = "Request to subscribe application failed with validation errors: " + errors)))),
           subscribeRequest => {
             val acknowledgementRef = generateAcknowledgementRef(safeId)
-            val timerContext = AuditService.metrics.startTimer(MetricsEnum.TAVC_SUBSCRIPTION)
+            val timerContext = auditService.metrics.startTimer(MetricsEnum.TAVC_SUBSCRIPTION)
             subscriptionService.subscribe(safeId, SubscriptionRequest(acknowledgementRef,subscribeRequest), postcode) map { responseReceived =>
               auditService.sendTAVCSubscriptionEvent(subscribeRequest, safeId, responseReceived, acknowledgementRef)
               auditService.logSubscriptionResponse(responseReceived, "SubscriptionController", "subscribe", safeId)

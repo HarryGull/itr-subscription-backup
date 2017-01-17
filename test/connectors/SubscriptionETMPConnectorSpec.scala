@@ -16,155 +16,137 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
 import helpers.TestHelper._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
-import java.util.UUID
-
+import uk.gov.hmrc.play.http.HttpResponse
 import common.GetSubscriptionResponses
+import helpers.AuthHelper
 import play.api.test.Helpers._
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
-
-  val mockHttp : WSHttp = mock[WSHttp]
-  val sessionId = UUID.randomUUID.toString
-
-  class Setup {
-    object TestConnector extends SubscriptionETMPConnector {
-      override val serviceUrl = "dummy"
-      override val environment = "test"
-      override val token = "test"
-      override val http = mockHttp
-    }
-  }
-
-  implicit val hc: HeaderCarrier = HeaderCarrier().withExtraHeaders("Accept" -> "application/vnd.hmrc.1.0+json", "Content-Type" -> "application/json")
-
+class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
+  
+  val testConnector = new SubscriptionETMPConnectorImpl(mockHttp, testAppConfig)
+  
   "SubscriptionETMPConnector" should {
-    "use WSHttp" in {
-      SubscriptionETMPConnector.http shouldBe WSHttp
-    }
 
     "Get the serviceUrl from the desURL in config" in {
-      SubscriptionETMPConnector.serviceUrl shouldBe MicroserviceAppConfig.desURL
+      testConnector.serviceUrl shouldBe testAppConfig.desURL
     }
 
-    "Get the environemnt from the desEnvironment in config" in {
-      SubscriptionETMPConnector.environment shouldBe MicroserviceAppConfig.desEnvironment
+    "Get the environment from the desEnvironment in config" in {
+      testConnector.environment shouldBe testAppConfig.desEnvironment
     }
 
     "Get the token from the desToken in config" in {
-      SubscriptionETMPConnector.token shouldBe MicroserviceAppConfig.desToken
+      testConnector.token shouldBe testAppConfig.desToken
     }
   }
 
   "calling subscribeToEtmp with a valid ackref and safeId" should {
-    "return a valid response" in new Setup {
+    "return a valid response" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.anyString(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(HttpResponse(OK))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestValid)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestValid)
       await(result).status shouldBe OK
     }
   }
 
   "Calling subscribeToEtmp with a invalid safeId" should {
-    "return a BAD_REQUEST" in new Setup {
+    "return a BAD_REQUEST" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK)))
-      val result = TestConnector.subscribeToEtmp(dummyInvalidSafeID,dummySubscriptionRequestValid)
+      val result = testConnector.subscribeToEtmp(dummyInvalidSafeID,dummySubscriptionRequestValid)
       await(result).status shouldBe OK
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'duplicate'" should {
-    "return a BAD_REQUEST error" in new Setup{
+    "return a BAD_REQUEST error" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(BAD_REQUEST)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestDuplicate)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestDuplicate)
       await(result).status shouldBe BAD_REQUEST
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'notfound'" should {
-    "return a NOT_FOUND Error" in new Setup {
+    "return a NOT_FOUND Error" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestNotFound)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestNotFound)
       await(result).status shouldBe NOT_FOUND
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'serviceunavailable'" should {
-    "return a SERVICE UNAVAILABLE ERROR" in new Setup  {
+    "return a SERVICE UNAVAILABLE ERROR" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID, dummySubscriptionRequestServiceUnavailable)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID, dummySubscriptionRequestServiceUnavailable)
       await(result).status shouldBe SERVICE_UNAVAILABLE
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'servererror'" should {
-    "return a INTERNAL SERVER ERROR" in new Setup  {
+    "return a INTERNAL SERVER ERROR" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestServerError)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestServerError)
       await(result).status shouldBe INTERNAL_SERVER_ERROR
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'missingregime'" should {
-    "return a INTERNAL SERVER ERROR" in new Setup  {
+    "return a INTERNAL SERVER ERROR" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestMissingRegime)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestMissingRegime)
       await(result).status shouldBe INTERNAL_SERVER_ERROR
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'sapnumbermissing'" should {
-    "return a INTERNAL SERVER ERROR" in new Setup  {
+    "return a INTERNAL SERVER ERROR" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestSapNumberMissing)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID,dummySubscriptionRequestSapNumberMissing)
       await(result).status shouldBe INTERNAL_SERVER_ERROR
     }
   }
 
   "Calling subscribeToEtmp with a ackRef containing 'notprocessed'" should {
-    "return a SERVICE UNAVAILABLE ERROR" in new Setup  {
+    "return a SERVICE UNAVAILABLE ERROR" in {
       when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE)))
-      val result = TestConnector.subscribeToEtmp(dummyValidSafeID, dummySubscriptionRequestNotProcessed)
+      val result = testConnector.subscribeToEtmp(dummyValidSafeID, dummySubscriptionRequestNotProcessed)
       await(result).status shouldBe SERVICE_UNAVAILABLE
     }
   }
 
   "Calling subscribeToEtmp with a valid Tavc Ref'" should {
-    "return a NOT_FOUND Error if a NOT_FOUND found returned from DES" in new Setup {
-      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
+    "return a NOT_FOUND Error if a NOT_FOUND found returned from DES" in {
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
         (Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
-      val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
+      val result = testConnector.getSubscription(dummyValidTavcRegNumber)
       await(result).status shouldBe NOT_FOUND
     }
   }
 
   "Calling subscribeToEtmp with a valid Tavc Ref'" should {
-    "return an OK with expected JSON body if a matching records returned from DES" in new Setup {
-      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${TestConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
+    "return an OK with expected JSON body if a matching records returned from DES" in {
+      when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testConnector.serviceUrl}/tax-assured-venture-capital/taxpayers/$dummyValidTavcRegNumber/subscription"))
         (Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, Some(GetSubscriptionResponses.getSubFull))))
-      val result = TestConnector.getSubscription(dummyValidTavcRegNumber)
+      val result = testConnector.getSubscription(dummyValidTavcRegNumber)
       val response = await(result)
       response.status shouldBe OK
       response.json shouldBe GetSubscriptionResponses.getSubFull

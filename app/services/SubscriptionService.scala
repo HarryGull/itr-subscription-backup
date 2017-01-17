@@ -16,6 +16,7 @@
 
 package services
 
+import com.google.inject.{Inject, Singleton}
 import common.GovernmentGatewayConstants
 import common.GovernmentGatewayConstants._
 import connectors.{AuthenticatorConnector, GovernmentGatewayAdminConnector, GovernmentGatewayConnector, SubscriptionETMPConnector}
@@ -23,24 +24,15 @@ import model.SubscriptionRequest
 import models.ggEnrolment.EnrolRequestModel
 import models.{KnownFact, KnownFactsForService}
 import play.api.http.Status._
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object SubscriptionService extends SubscriptionService{
-  val subscriptionETMPConnector: SubscriptionETMPConnector = SubscriptionETMPConnector
-  val ggAdminConnector: GovernmentGatewayAdminConnector = GovernmentGatewayAdminConnector
-  val ggConnector: GovernmentGatewayConnector = GovernmentGatewayConnector
-  val authenticatorConnector: AuthenticatorConnector = AuthenticatorConnector
-}
-
-trait SubscriptionService {
-
-  val subscriptionETMPConnector: SubscriptionETMPConnector
-  val ggAdminConnector: GovernmentGatewayAdminConnector
-  val ggConnector: GovernmentGatewayConnector
-  val authenticatorConnector: AuthenticatorConnector
+@Singleton
+class SubscriptionServiceImpl @Inject()(subscriptionETMPConnector: SubscriptionETMPConnector,
+                                    ggAdminConnector: GovernmentGatewayAdminConnector,
+                                    ggConnector: GovernmentGatewayConnector,
+                                    authenticatorConnector: AuthenticatorConnector) extends SubscriptionService {
 
   def subscribe(safeId: String,
                 subscriptionRequest: SubscriptionRequest,
@@ -88,4 +80,16 @@ trait SubscriptionService {
               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     subscriptionETMPConnector.getSubscription(tavcReferenceNumber)
   }
+}
+
+trait SubscriptionService {
+  def subscribe(safeId: String,
+                subscriptionRequest: SubscriptionRequest,
+                postcode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
+  def addKnownFacts(etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def addEnrolment(ggAdminResponse: HttpResponse, etmpResponse: HttpResponse, postCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def refreshAuthProfile(ggResponse: HttpResponse)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def knownFactsBuilder(tavReference: String, postCode: String): KnownFactsForService
+  def enrolmentRequestBuilder(tavcReference: String, postCode: String): EnrolRequestModel
+  def getSubscription(tavcReferenceNumber: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
 }

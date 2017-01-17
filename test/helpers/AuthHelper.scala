@@ -16,28 +16,28 @@
 
 package helpers
 
-import auth.{Authorisation, Authorised, Authority, NotAuthorised}
+import auth.Authority
+import config.TestAppConfig
 import connectors.AuthConnector
 import org.mockito.Matchers
 import org.mockito.Mockito._
-import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.mock.MockitoSugar
-import play.api.mvc.Result
-import play.api.mvc.Results._
-import services.AuditService
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpPost, HttpResponse}
+import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
 
-object AuthHelper extends MockitoSugar {
+trait AuthHelper extends MockitoSugar {
 
   val oid = "foo"
   val uri = s"""/x/y/$oid"""
+  val authURI = "/auth/authority"
   val userDetailsLink = "bar"
   val mockAuthConnector = mock[AuthConnector]
-  val mockAuditService = mock[AuditService]
-  val mockHttp = mock[HttpGet with HttpPost]
+
+  val mockHttp = mock[WSHttp]
+  val testAppConfig = new TestAppConfig
 
   implicit val hc = HeaderCarrier()
 
@@ -49,11 +49,11 @@ object AuthHelper extends MockitoSugar {
   }
 
   def mockGetCurrentAuthority(response: HttpResponse): Unit =
-    when(mockHttp.GET[HttpResponse](Matchers.eq("localhost/auth/authority"))(Matchers.any(), Matchers.any()))
+    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$authURI"))(Matchers.any(), Matchers.any()))
       .thenReturn(Future.successful(response))
 
   def mockGetAffinityGroupResponse(response: HttpResponse): Unit =
-    when(mockHttp.GET[HttpResponse](Matchers.eq(s"localhost$uri"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
+    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$uri"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   object Authorities {
     val userCL0 = authorityBuilder(ConfidenceLevel.L0)
@@ -65,6 +65,7 @@ object AuthHelper extends MockitoSugar {
   }
 
   object AffinityGroups {
-   val organisation = Some("Organisation")
+    val organisation = Some("Organisation")
+    val agent = Some("Agent")
   }
 }

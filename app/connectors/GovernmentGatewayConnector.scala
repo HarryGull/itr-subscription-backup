@@ -16,22 +16,25 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import com.google.inject.{Inject, Singleton}
+import config.AppConfig
 import models.ggEnrolment._
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait GovernmentGatewayConnector extends ServicesConfig with RawResponseReads {
+@Singleton
+class GovernmentGatewayConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
+  extends GovernmentGatewayConnector with ServicesConfig with RawResponseReads {
 
-  def serviceURL: String
-  def enrolURI: String
-  val http: HttpGet with HttpPost
+  val serviceURL = applicationConfig.ggURL
+  val enrolURI = "enrol"
 
   def addEnrolment(enrolRequest: EnrolRequestModel)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
@@ -49,8 +52,6 @@ trait GovernmentGatewayConnector extends ServicesConfig with RawResponseReads {
   }
 }
 
-object GovernmentGatewayConnector extends GovernmentGatewayConnector {
-  val serviceURL = MicroserviceAppConfig.ggURL
-  val enrolURI = "enrol"
-  val http = WSHttp
+trait GovernmentGatewayConnector {
+  def addEnrolment(enrolRequest: EnrolRequestModel)(implicit hc: HeaderCarrier): Future[HttpResponse]
 }

@@ -17,23 +17,19 @@
 package connectors
 
 import auth.Authority
-import config.{MicroserviceAppConfig, WSHttp}
+import config.TestAppConfig
+import helpers.AuthHelper
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.{HttpGet, HttpPost, HttpResponse}
+import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
-import helpers.AuthHelper._
 import org.scalatestplus.play.OneAppPerSuite
 
-class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
+class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
 
-  object TestAuthConnector extends AuthConnector {
-    override def serviceUrl: String = "localhost"
-    override def authorityUri: String = "auth/authority"
-    override def http: HttpGet with HttpPost = mockHttp
-  }
+  val testConnector = new AuthConnectorImpl(mockHttp, testAppConfig)
 
   val authResponse = Json.parse(
     s"""{
@@ -52,11 +48,8 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
   )
 
   "AuthConnector" should {
-    "Use WSHttp" in {
-      AuthConnector.http shouldBe WSHttp
-    }
     "Get the serviceUrl from the authURL in config" in {
-      AuthConnector.serviceUrl shouldBe MicroserviceAppConfig.authURL
+      testConnector.serviceUrl shouldBe testAppConfig.authURL
     }
   }
 
@@ -64,13 +57,13 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
     "return Some(Authority) when auth info is found " in {
       mockGetAffinityGroupResponse(HttpResponse(OK, Some(affinityResponse("Authorised"))))
       mockGetCurrentAuthority(HttpResponse(OK, Some(authResponse)))
-      await(TestAuthConnector.getCurrentAuthority()) shouldBe Some(Authority(uri, oid, userDetailsLink, ConfidenceLevel.L50))
+      await(testConnector.getCurrentAuthority()) shouldBe Some(Authority(uri, oid, userDetailsLink, ConfidenceLevel.L50))
     }
 
     "return None when no auth info is found" in {
       mockGetAffinityGroupResponse(HttpResponse(OK, Some(affinityResponse("Authorised"))))
       mockGetCurrentAuthority(HttpResponse(NOT_FOUND, None))
-      await(TestAuthConnector.getCurrentAuthority()) shouldBe None
+      await(testConnector.getCurrentAuthority()) shouldBe None
     }
   }
 
@@ -78,19 +71,19 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
     "return Some('Organisation') when a ORGANISATION is found" in {
       mockGetAffinityGroupResponse(HttpResponse(OK, Some(affinityResponse("Organisation"))))
       mockGetCurrentAuthority(HttpResponse(OK, Some(authResponse)))
-      await(TestAuthConnector.getAffinityGroup(uri)) shouldBe Some("Organisation")
+      await(testConnector.getAffinityGroup(uri)) shouldBe Some("Organisation")
     }
 
     "return Some('Individual') when a Agent is found" in {
       mockGetAffinityGroupResponse(HttpResponse(OK, Some(affinityResponse("Agent"))))
       mockGetCurrentAuthority(HttpResponse(OK, Some(authResponse)))
-      await(TestAuthConnector.getAffinityGroup(uri)) shouldBe Some("Agent")
+      await(testConnector.getAffinityGroup(uri)) shouldBe Some("Agent")
     }
 
     "return None when a None is found" in {
       mockGetAffinityGroupResponse(HttpResponse(NOT_FOUND, None))
       mockGetCurrentAuthority(HttpResponse(OK, Some(authResponse)))
-      await(TestAuthConnector.getAffinityGroup(uri)) shouldBe None
+      await(testConnector.getAffinityGroup(uri)) shouldBe None
     }
   }
 

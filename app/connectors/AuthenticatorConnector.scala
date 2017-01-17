@@ -16,26 +16,27 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import com.google.inject.{Inject, Singleton}
+import config.AppConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
+import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.Future
 
-trait AuthenticatorConnector extends ServicesConfig with RawResponseReads {
+@Singleton
+class AuthenticatorConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
+  extends AuthenticatorConnector with ServicesConfig with RawResponseReads {
 
-  val serviceURL: String
-  val refreshURI: String
-  val http: HttpGet with HttpPost
+  val serviceURL = applicationConfig.authenticatorURL
+  val refreshURI = "authenticator/refresh-profile"
 
   def refreshProfile(implicit hc: HeaderCarrier): Future[HttpResponse] =
     http.POSTEmpty[HttpResponse](s"""$serviceURL/$refreshURI""")
 
 }
 
-object AuthenticatorConnector extends AuthenticatorConnector {
-  val serviceURL = MicroserviceAppConfig.authenticatorURL
-  val refreshURI = "authenticator/refresh-profile"
-  val http = WSHttp
+trait AuthenticatorConnector {
+  def refreshProfile(implicit hc: HeaderCarrier): Future[HttpResponse]
 }

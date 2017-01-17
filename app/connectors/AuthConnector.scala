@@ -16,22 +16,24 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import config.AppConfig
 import play.api.http.Status._
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import auth.Authority
+import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
+import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait AuthConnector extends ServicesConfig {
+@Singleton
+class AuthConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig) extends AuthConnector with ServicesConfig {
 
-  def serviceUrl: String
-  def authorityUri: String
-  def http: HttpGet with HttpPost
+  val serviceUrl = applicationConfig.authURL
+  val authorityUri = "auth/authority"
 
   def getCurrentAuthority()(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
     val getUrl = s"""$serviceUrl/$authorityUri"""
@@ -63,8 +65,7 @@ trait AuthConnector extends ServicesConfig {
   }
 }
 
-object AuthConnector extends AuthConnector {
-  lazy val serviceUrl = MicroserviceAppConfig.authURL
-  val authorityUri = "auth/authority"
-  val http: HttpGet with HttpPost = WSHttp
+trait AuthConnector {
+  def getCurrentAuthority()(implicit hc: HeaderCarrier): Future[Option[Authority]]
+  def getAffinityGroup(url: String)(implicit hc: HeaderCarrier): Future[Option[String]]
 }

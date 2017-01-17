@@ -16,30 +16,23 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import com.google.inject.{Inject, Singleton}
+import config.AppConfig
 import model.SubscriptionRequest
 import play.api.libs.json.{JsValue, Json, Writes}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.http.logging.Authorization
+import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object SubscriptionETMPConnector extends SubscriptionETMPConnector {
+@Singleton
+class SubscriptionETMPConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig) extends SubscriptionETMPConnector with ServicesConfig {
 
-  override val serviceUrl = MicroserviceAppConfig.desURL
-  override def http: HttpGet with HttpPost with HttpPut = WSHttp
-  override val environment = MicroserviceAppConfig.desEnvironment
-  override val token = MicroserviceAppConfig.desToken
-}
-
-trait SubscriptionETMPConnector extends ServicesConfig {
-
-  def http: HttpGet with HttpPost with HttpPut
-
-  val serviceUrl: String
-  val environment: String
-  val token: String
+  val serviceUrl = applicationConfig.desURL
+  val environment = applicationConfig.desEnvironment
+  val token = applicationConfig.desToken
 
   def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"
@@ -53,4 +46,12 @@ trait SubscriptionETMPConnector extends ServicesConfig {
     val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $token"))).withExtraHeaders("Environment" -> environment)
     http.GET[HttpResponse](requestUrl)(HttpReads.readRaw,desHeaders)
   }
+}
+
+trait SubscriptionETMPConnector {
+  val serviceUrl: String
+  val environment: String
+  val token: String
+  def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
+  def getSubscription(tavcReferenceNumber: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
 }

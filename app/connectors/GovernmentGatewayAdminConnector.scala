@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.{MicroserviceAppConfig, WSHttp}
+import config.AppConfig
 import models._
 import play.api.Logger
 import play.api.http.Status._
@@ -27,12 +27,15 @@ import common.GovernmentGatewayConstants
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import com.google.inject._
+import uk.gov.hmrc.play.http.ws.WSHttp
 
-trait GovernmentGatewayAdminConnector extends ServicesConfig with RawResponseReads {
+@Singleton
+class GovernmentGatewayAdminConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
+  extends GovernmentGatewayAdminConnector with ServicesConfig with RawResponseReads {
 
-  def serviceURL: String
-  def addKnownFactsURI: String
-  val http: HttpGet with HttpPost
+  val serviceURL = applicationConfig.ggAdminURL
+  val addKnownFactsURI = "known-facts"
 
   def addKnownFacts(knownFacts: KnownFactsForService)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
@@ -52,8 +55,6 @@ trait GovernmentGatewayAdminConnector extends ServicesConfig with RawResponseRea
   }
 }
 
-object GovernmentGatewayAdminConnector extends GovernmentGatewayAdminConnector {
-  val serviceURL = MicroserviceAppConfig.ggAdminURL
-  val addKnownFactsURI = "known-facts"
-  val http = WSHttp
+trait GovernmentGatewayAdminConnector {
+  def addKnownFacts(knownFacts: KnownFactsForService)(implicit hc: HeaderCarrier): Future[HttpResponse]
 }

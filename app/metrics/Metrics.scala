@@ -27,7 +27,7 @@ trait Metrics extends MicroserviceMetrics {
   def incrementFailedCounter(api: MetricsEnum): Unit
 }
 
-object Metrics extends Metrics {
+class MetricsImpl extends Metrics {
 
   val timers = Map(
     MetricsEnum.TAVC_SUBSCRIPTION -> metrics.defaultRegistry.timer("tavc-subscription-response-timer")
