@@ -20,8 +20,8 @@ import com.google.inject.Inject
 import play.api.http.DefaultHttpFilters
 
 class FilterConfig @Inject()(metrics: MetricsFilter,
-                        logging: LoggingFilter,
-                        audit: AuditFilter,
-                        recovery: RecoveryFilter)
-  extends DefaultHttpFilters(metrics, logging, audit, recovery)
+                             audit: AuditFilter,
+                             logging: LoggingFilter,
+                             recovery: RecoveryFilter)
+  extends DefaultHttpFilters(metrics, audit, logging, recovery)
 
