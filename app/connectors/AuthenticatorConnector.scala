@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class AuthenticatorConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
   extends AuthenticatorConnector with ServicesConfig with RawResponseReads {
 
-  val serviceURL = applicationConfig.authenticatorURL
+  lazy val serviceURL = applicationConfig.authenticatorURL
   val refreshURI = "authenticator/refresh-profile"
 
   def refreshProfile(implicit hc: HeaderCarrier): Future[HttpResponse] =

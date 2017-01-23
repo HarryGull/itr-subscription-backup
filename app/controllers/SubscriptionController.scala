@@ -18,7 +18,7 @@ package controllers
 
 import auth.{Authorisation, Authorised, NotAuthorised}
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import connectors.AuthConnector
 import metrics.MetricsEnum
 import model.{Error, SubscriptionRequest, SubscriptionType}
@@ -36,7 +36,7 @@ class SubscriptionController @Inject()(subscriptionService: SubscriptionService,
                                        auditService: AuditService,
                                        override val authConnector: AuthConnector) extends BaseController with Authorisation {
 
-  val subscribe = (safeId: String, postcode: String) => Action.async(BodyParsers.parse.json) { implicit request =>
+  def subscribe(safeId: String, postcode: String): Action[JsValue] = Action.async(BodyParsers.parse.json) { implicit request =>
     authorised {
       case Authorised => {
 

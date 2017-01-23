@@ -32,7 +32,7 @@ import scala.concurrent.Future
 @Singleton
 class AuthConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig) extends AuthConnector with ServicesConfig {
 
-  val serviceUrl = applicationConfig.authURL
+  lazy val serviceUrl = applicationConfig.authURL
   val authorityUri = "auth/authority"
 
   def getCurrentAuthority()(implicit hc: HeaderCarrier): Future[Option[Authority]] = {

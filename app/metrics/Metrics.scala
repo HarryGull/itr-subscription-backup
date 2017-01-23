@@ -18,26 +18,28 @@ package metrics
 
 import com.codahale.metrics.Timer
 import com.codahale.metrics.Timer.Context
+import com.google.inject.{Inject, Singleton}
+import com.kenshoo.play.metrics.{Metrics => GraphiteMetrics}
 import metrics.MetricsEnum.MetricsEnum
-import uk.gov.hmrc.play.graphite.MicroserviceMetrics
 
-trait Metrics extends MicroserviceMetrics {
+trait Metrics {
   def startTimer(api: MetricsEnum): Timer.Context
   def incrementSuccessCounter(api: MetricsEnum): Unit
   def incrementFailedCounter(api: MetricsEnum): Unit
 }
 
-class MetricsImpl extends Metrics {
+@Singleton
+class MetricsImpl @Inject()(val metrics: GraphiteMetrics) extends Metrics {
 
-  val timers = Map(
+  lazy val timers = Map(
     MetricsEnum.TAVC_SUBSCRIPTION -> metrics.defaultRegistry.timer("tavc-subscription-response-timer")
   )
 
-  val successCounters = Map(
+  lazy val successCounters = Map(
     MetricsEnum.TAVC_SUBSCRIPTION -> metrics.defaultRegistry.counter("tavc-subscription-success-counter")
   )
 
-  val failedCounters = Map(
+  lazy val failedCounters = Map(
     MetricsEnum.TAVC_SUBSCRIPTION -> metrics.defaultRegistry.counter("tavc-subscription-failed-counter")
   )
 

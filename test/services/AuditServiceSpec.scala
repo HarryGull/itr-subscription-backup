@@ -44,7 +44,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
 
 
   lazy val testAuditService = new AuditServiceImpl(metricsMock, mockAuditConnector) {
-    override val audit = auditMock
+    override lazy val audit = auditMock
     override val metrics = metricsMock
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val rh: RequestHeader = FakeRequest("GET", testRequestPath)
@@ -52,13 +52,13 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with AppName with OneA
   }
 
   lazy val testAuditServiceWithCustomLogFormat = new AuditServiceImpl(metricsMock, mockAuditConnector) {
-    override val audit = auditMock
+    override lazy val audit = auditMock
     override val metrics = metricsMock
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val rh: RequestHeader = FakeRequest("GET", testRequestPath)
 
     // override the logging message format to customise and test it
-    override val logMessageFormat = (controller: String, controllerAction: String, dayOfWeek: String, statusCode: String, eventMessage: String) => 
+    override val logMessageFormat = (controller: String, controllerAction: String, dayOfWeek: String, statusCode: String, eventMessage: String) =>
       s"Subscribe Audit event recorded on $dayOfWeek for [${controller + "/" + controllerAction}]. StatusCode was: [$statusCode]. Event Status is: $eventMessage"
 
     val expectedCustomLogFormatSuccessMessageFriday10Count =
