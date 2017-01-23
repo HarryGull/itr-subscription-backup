@@ -30,9 +30,9 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SubscriptionETMPConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig) extends SubscriptionETMPConnector with ServicesConfig {
 
-  val serviceUrl = applicationConfig.desURL
-  val environment = applicationConfig.desEnvironment
-  val token = applicationConfig.desToken
+  lazy val serviceUrl = applicationConfig.desURL
+  lazy val environment = applicationConfig.desEnvironment
+  lazy val token = applicationConfig.desToken
 
   def subscribeToEtmp(safeId: String, subscribeRequest: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/tax-assured-venture-capital/taxpayers/$safeId/subscription"

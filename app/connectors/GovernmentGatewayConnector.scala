@@ -33,7 +33,7 @@ import scala.concurrent.Future
 class GovernmentGatewayConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
   extends GovernmentGatewayConnector with ServicesConfig with RawResponseReads {
 
-  val serviceURL = applicationConfig.ggURL
+  lazy val serviceURL = applicationConfig.ggURL
   val enrolURI = "enrol"
 
   def addEnrolment(enrolRequest: EnrolRequestModel)(implicit hc: HeaderCarrier): Future[HttpResponse] = {

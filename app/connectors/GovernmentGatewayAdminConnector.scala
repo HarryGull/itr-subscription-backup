@@ -34,7 +34,7 @@ import uk.gov.hmrc.play.http.ws.WSHttp
 class GovernmentGatewayAdminConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
   extends GovernmentGatewayAdminConnector with ServicesConfig with RawResponseReads {
 
-  val serviceURL = applicationConfig.ggAdminURL
+  lazy val serviceURL = applicationConfig.ggAdminURL
   val addKnownFactsURI = "known-facts"
 
   def addKnownFacts(knownFacts: KnownFactsForService)(implicit hc: HeaderCarrier): Future[HttpResponse] = {

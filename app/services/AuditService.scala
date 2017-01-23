@@ -31,10 +31,10 @@ import metrics.{Metrics, MetricsEnum}
 
 import scala.util.{Failure, Success, Try}
 
-class AuditServiceImpl @Inject()(override val metrics: Metrics, auditConnector: AuditConnector) extends AuditService with AppName {
+class AuditServiceImpl @Inject()(val metrics: Metrics, auditConnector: AuditConnector) extends AuditService with AppName {
   this: AppName =>
 
-  val audit = new Audit(appName, auditConnector)
+  lazy val audit = new Audit(appName, auditConnector)
   val logMessageFormat = (controller:String, controllerAction:String, safeId:String,  statusCode:String, message:String) =>
     s"[$controller] [$controllerAction] [$safeId] [$statusCode] - $message"
 
