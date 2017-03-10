@@ -28,7 +28,7 @@ private object AppDependencies {
   private val hmrcTestVersion = "2.3.0"
   private val playReactivemongoVersion = "5.2.0"
   private val playGraphiteVersion = "3.1.0"
-  private val metricsGraphiteVersion = "3.0.2"
+  private val metricsGraphiteVersion = "3.2.0"
   private val pegDownVersion = "1.6.0"
   private val scalaTestVersion = "2.2.6"
   private val mockitoAll = "1.9.5"
