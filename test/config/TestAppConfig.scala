@@ -16,9 +16,11 @@
 
 package config
 
-class TestAppConfig extends AppConfig {
+import uk.gov.hmrc.play.config.ServicesConfig
+
+class TestAppConfig extends AppConfig  with ServicesConfig{
   override lazy val authURL = "auth"
-  override lazy val authenticatorURL = "authenticator"
+  override lazy val authenticatorURL = baseUrl("gg-authentication")
   override lazy val ggAdminURL = "government-gateway-admin"
   override lazy val ggURL = "government-gateway"
   override lazy val desURL = "des"
