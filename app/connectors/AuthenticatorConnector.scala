@@ -29,11 +29,11 @@ import scala.concurrent.Future
 class AuthenticatorConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
   extends AuthenticatorConnector with ServicesConfig with RawResponseReads {
 
-  lazy val serviceURL = applicationConfig.authenticatorURL
-  val refreshURI = "authenticator/refresh-profile"
+  lazy val ggAuthenticationURL: String = baseUrl("gg-authentication")
+  val refreshURI = "government-gateway-authentication/refresh-profile"
 
   def refreshProfile(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    http.POSTEmpty[HttpResponse](s"""$serviceURL/$refreshURI""")
+    http.POSTEmpty[HttpResponse](s"""$ggAuthenticationURL/$refreshURI""")
 
 }
 
