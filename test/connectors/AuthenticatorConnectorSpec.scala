@@ -32,12 +32,12 @@ class AuthenticatorConnectorSpec extends UnitSpec with MockitoSugar with OneAppP
   val testConnector = new AuthenticatorConnectorImpl(mockHttp, testAppConfig)
 
   def setupMock(response: HttpResponse): Unit =
-    when(mockHttp.POSTEmpty[HttpResponse](Matchers.eq(s"${testConnector.serviceURL}/${testConnector.refreshURI}"))
+    when(mockHttp.POSTEmpty[HttpResponse](Matchers.eq(s"${testConnector.ggAuthenticationURL}/${testConnector.refreshURI}"))
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   "AuthenticatorConnector" should {
     "Get the serviceUrl from the authenticatorURL in config" in {
-      testConnector.serviceURL shouldBe testAppConfig.authenticatorURL
+      testConnector.ggAuthenticationURL shouldBe testAppConfig.authenticatorURL
     }
   }
 

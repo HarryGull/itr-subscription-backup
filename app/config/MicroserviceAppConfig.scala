@@ -35,7 +35,7 @@ class MicroserviceAppConfig @Inject()(configuration: Configuration) extends AppC
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
   override lazy val authURL = baseUrl("auth")
-  override lazy val authenticatorURL = baseUrl("authenticator")
+  override lazy val authenticatorURL = baseUrl("gg-authentication")
   override lazy val ggAdminURL = baseUrl("government-gateway-admin")
   override lazy val ggURL = baseUrl("government-gateway")
   override lazy val desURL = baseUrl("des")
