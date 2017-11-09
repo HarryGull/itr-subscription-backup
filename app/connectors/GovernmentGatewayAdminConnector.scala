@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.AppConfig
+import config.{AppConfig, WSHttp}
 import models._
 import play.api.Logger
 import play.api.http.Status._
@@ -28,8 +28,7 @@ import common.GovernmentGatewayConstants
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import com.google.inject._
-import uk.gov.hmrc.play.http.ws.WSHttp
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 @Singleton
 class GovernmentGatewayAdminConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)

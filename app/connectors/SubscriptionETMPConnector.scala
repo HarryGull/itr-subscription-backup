@@ -17,15 +17,14 @@
 package connectors
 
 import com.google.inject.{Inject, Singleton}
-import config.AppConfig
+import config.{AppConfig, WSHttp}
 import model.SubscriptionRequest
 import play.api.libs.json.{JsValue, Json, Writes}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import uk.gov.hmrc.http.logging.Authorization
 
 @Singleton

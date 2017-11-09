@@ -17,16 +17,15 @@
 package helpers
 
 import auth.Authority
-import config.TestAppConfig
+import config.{WSHttp, TestAppConfig}
 import connectors.AuthConnector
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 trait AuthHelper extends MockitoSugar {
 

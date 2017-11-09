@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.http.HttpResponse
 
 class SubscriptionETMPConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
-  
+
   val testConnector = new SubscriptionETMPConnectorImpl(mockHttp, testAppConfig)
   
   "SubscriptionETMPConnector" should {

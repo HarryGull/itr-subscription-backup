@@ -17,18 +17,17 @@
 package connectors
 
 import com.google.inject.{Inject, Singleton}
-import config.AppConfig
+import config.{AppConfig, WSHttp}
 import models.ggEnrolment._
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 @Singleton
 class GovernmentGatewayConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig)
