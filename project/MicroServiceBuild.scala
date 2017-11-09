@@ -19,16 +19,10 @@ private object AppDependencies {
   import play.core.PlayVersion
 
   private val microserviceBootstrapVersion = "6.12.0"
-  private val playAuthVersion = "5.1.0"
-  private val playHealthVersion = "2.1.0"
-  private val playJsonLoggerVersion = "3.1.0"
   private val playUrlBindersVersion = "2.1.0"
-  private val playConfigVersion = "4.3.0"
   private val domainVersion = "5.0.0"
   private val hmrcTestVersion = "2.3.0"
   private val playReactivemongoVersion = "5.2.0"
-  private val playGraphiteVersion = "4.1.0"
-  private val metricsGraphiteVersion = "3.2.0"
   private val pegDownVersion = "1.6.0"
   private val scalaTestVersion = "2.2.6"
   private val mockitoAll = "1.9.5"
