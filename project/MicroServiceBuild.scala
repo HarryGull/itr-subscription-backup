@@ -18,16 +18,16 @@ private object AppDependencies {
   import play.sbt.PlayImport._
   import play.core.PlayVersion
 
-  private val microserviceBootstrapVersion = "5.16.0"
-  private val playAuthVersion = "4.3.0"
+  private val microserviceBootstrapVersion = "6.12.0"
+  private val playAuthVersion = "5.1.0"
   private val playHealthVersion = "2.1.0"
   private val playJsonLoggerVersion = "3.1.0"
   private val playUrlBindersVersion = "2.1.0"
   private val playConfigVersion = "4.3.0"
-  private val domainVersion = "4.1.0"
+  private val domainVersion = "5.0.0"
   private val hmrcTestVersion = "2.3.0"
   private val playReactivemongoVersion = "5.2.0"
-  private val playGraphiteVersion = "3.2.0"
+  private val playGraphiteVersion = "4.1.0"
   private val metricsGraphiteVersion = "3.2.0"
   private val pegDownVersion = "1.6.0"
   private val scalaTestVersion = "2.2.6"
@@ -38,13 +38,8 @@ private object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
     "uk.gov.hmrc" %% "microservice-bootstrap" % microserviceBootstrapVersion,
-    "uk.gov.hmrc" %% "play-authorisation" % playAuthVersion,
-    "uk.gov.hmrc" %% "play-health" % playHealthVersion,
     "uk.gov.hmrc" %% "play-url-binders" % playUrlBindersVersion,
-    "uk.gov.hmrc" %% "play-config" % playConfigVersion,
-    "uk.gov.hmrc" %% "logback-json-logger" % playJsonLoggerVersion,
-    "uk.gov.hmrc" %% "domain" % domainVersion,
-    "uk.gov.hmrc" %% "play-graphite" % playGraphiteVersion
+    "uk.gov.hmrc" %% "domain" % domainVersion
   )
 
   trait TestDependencies {
