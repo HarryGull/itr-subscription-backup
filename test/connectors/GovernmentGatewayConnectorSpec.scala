@@ -24,10 +24,10 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HttpResponse
 
 class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite with AuthHelper {
 
@@ -55,7 +55,7 @@ class GovernmentGatewayConnectorSpec extends UnitSpec with MockitoSugar with Fak
   val errorResponse = Json.parse( """{ "Message": "An error occured" }""")
 
   def mockGatewayResponse(response: HttpResponse): Unit =
-    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).
+    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())).
       thenReturn(Future.successful(response))
 
   "GovernmentGatewayConnector" should {

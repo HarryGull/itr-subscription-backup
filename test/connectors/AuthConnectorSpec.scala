@@ -23,9 +23,9 @@ import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 import org.scalatestplus.play.OneAppPerSuite
+import uk.gov.hmrc.http.HttpResponse
 
 class AuthConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
 

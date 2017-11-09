@@ -17,9 +17,9 @@
 package connectors
 
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector => Auditing}
 import uk.gov.hmrc.play.config.AppName
+import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 @Singleton
 class AuditConnector @Inject()() extends Auditing with AppName {

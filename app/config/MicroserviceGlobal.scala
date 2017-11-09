@@ -17,14 +17,12 @@
 package config
 
 import play.api.{Application, Configuration, Play}
-import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{AppName, RunMode}
-import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
-import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 import uk.gov.hmrc.play.microservice.bootstrap.DefaultMicroserviceGlobal
 import connectors.AuditConnector
 import controllers.ControllerConfiguration
+import uk.gov.hmrc.play.microservice.filters.{ AuditFilter, LoggingFilter, MicroserviceFilterSupport }
 
 object ControllerConfig extends ControllerConfiguration(Play.current.configuration)
 object MicroserviceAuditConnector extends AuditConnector

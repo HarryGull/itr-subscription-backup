@@ -24,9 +24,9 @@ import model.SubscriptionRequest
 import models.ggEnrolment.EnrolRequestModel
 import models.{KnownFact, KnownFactsForService}
 import play.api.http.Status._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 @Singleton
 class SubscriptionServiceImpl @Inject()(subscriptionETMPConnector: SubscriptionETMPConnector,

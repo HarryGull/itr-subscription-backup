@@ -26,13 +26,13 @@ import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.test.UnitSpec
 import org.mockito.Matchers
 import org.mockito.Mockito._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.http.logging.SessionId
 import play.api.test.Helpers._
 import org.scalatestplus.play.OneAppPerSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.logging.SessionId
 
 class SubscriptionServiceSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with BeforeAndAfterEach with OneAppPerSuite {
 

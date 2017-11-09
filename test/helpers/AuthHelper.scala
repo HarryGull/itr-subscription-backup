@@ -17,16 +17,15 @@
 package helpers
 
 import auth.Authority
-import config.TestAppConfig
+import config.{WSHttp, TestAppConfig}
 import connectors.AuthConnector
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.ws.WSHttp
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 trait AuthHelper extends MockitoSugar {
 
@@ -49,11 +48,11 @@ trait AuthHelper extends MockitoSugar {
   }
 
   def mockGetCurrentAuthority(response: HttpResponse): Unit =
-    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$authURI"))(Matchers.any(), Matchers.any()))
+    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$authURI"))(Matchers.any(), Matchers.any(), Matchers.any()))
       .thenReturn(Future.successful(response))
 
   def mockGetAffinityGroupResponse(response: HttpResponse): Unit =
-    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$uri"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
+    when(mockHttp.GET[HttpResponse](Matchers.eq(s"${testAppConfig.authURL}$uri"))(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   object Authorities {
     val userCL0 = authorityBuilder(ConfidenceLevel.L0)

@@ -19,7 +19,6 @@ package connectors
 import helpers.{AuthHelper, FakeRequestHelper}
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.play.http.HttpResponse
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.UnitSpec
 import models.{KnownFact, KnownFactsForService}
@@ -28,13 +27,14 @@ import org.mockito.Mockito._
 import org.scalatestplus.play.OneAppPerSuite
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HttpResponse
 
 class GovernmentGatewayAdminConnectorSpec extends UnitSpec with MockitoSugar with FakeRequestHelper with OneAppPerSuite with AuthHelper {
 
   val testConnector = new GovernmentGatewayAdminConnectorImpl(mockHttp, testAppConfig)
 
   def mockGatewayResponse(response: HttpResponse): Unit =
-    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).
+    when(mockHttp.POST[JsValue, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())).
       thenReturn(Future.successful(response))
 
   "GovernmentGatewayAdminConnector" should {

@@ -23,13 +23,13 @@ import model.SubscriptionType
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.play.config.AppName
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import play.api.http.Status
 import play.api.Logger
 import metrics.{Metrics, MetricsEnum}
 
 import scala.util.{Failure, Success, Try}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class AuditServiceImpl @Inject()(val metrics: Metrics, auditConnector: AuditConnector) extends AuditService with AppName {
   this: AppName =>

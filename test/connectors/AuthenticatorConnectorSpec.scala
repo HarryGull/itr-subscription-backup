@@ -16,24 +16,28 @@
 
 package connectors
 
+
 import helpers.AuthHelper
 import org.scalatest.mock.MockitoSugar
 import play.api.test.Helpers._
 import org.mockito.Mockito._
 import org.mockito.Matchers
-import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 import org.scalatestplus.play.OneAppPerSuite
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{HttpGet, HttpPost, HttpPut, HttpResponse}
+import uk.gov.hmrc.play.http.ws.WSHttp
+
 
 class AuthenticatorConnectorSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with AuthHelper {
 
-  val testConnector = new AuthenticatorConnectorImpl(mockHttp, testAppConfig)
+
+  object testConnector extends AuthenticatorConnectorImpl(mockHttp, testAppConfig)
 
   def setupMock(response: HttpResponse): Unit =
     when(mockHttp.POSTEmpty[HttpResponse](Matchers.eq(s"${testConnector.ggAuthenticationURL}/${testConnector.refreshURI}"))
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
+      (Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(response))
 
   "AuthenticatorConnector" should {
     "Get the serviceUrl from the authenticatorURL in config" in {

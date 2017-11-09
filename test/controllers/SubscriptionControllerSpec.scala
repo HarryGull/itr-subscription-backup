@@ -23,7 +23,6 @@ import metrics.{Metrics, MetricsEnum, MetricsImpl}
 import model.{SubscriptionResponse, SubscriptionType}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
@@ -35,6 +34,7 @@ import play.api.mvc.RequestHeader
 import services.{AuditService, SubscriptionService}
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with BeforeAndAfter with TestHelper with AuthHelper {
 

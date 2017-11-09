@@ -16,18 +16,18 @@
 
 package connectors
 
-import config.AppConfig
+import config.{AppConfig, WSHttp}
 import play.api.http.Status._
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import auth.Authority
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.play.auth.microservice.connectors.ConfidenceLevel
-import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, HttpResponse}
 
 @Singleton
 class AuthConnectorImpl @Inject()(http: WSHttp, applicationConfig: AppConfig) extends AuthConnector with ServicesConfig {

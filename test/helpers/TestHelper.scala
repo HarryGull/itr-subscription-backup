@@ -21,7 +21,7 @@ import org.mockito.ArgumentCaptor
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.http.HttpResponse
 
 object TestHelper extends TestHelper
 
